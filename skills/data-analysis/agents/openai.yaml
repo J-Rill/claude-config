@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Analysis"
+  short_description: "End-to-end Python data analysis pipeline — exploration → cleaning..."
+  default_prompt: "Use $data-analysis for a task that matches this imported Claude Code skill."

@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Python caches (in case a skill ships scripts)
+__pycache__/
+*.pyc
+
+# Local, machine-specific overrides — not meant to be shared
+settings.local.json
