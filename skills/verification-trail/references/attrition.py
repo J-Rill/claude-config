@@ -13,7 +13,8 @@ observation ends up accounted for with a reason, which is exactly what a referee
     att.step("drop penny stocks", len(df), why="offer price < $5")
     df = df.merge(crsp, on="permno", how="inner")
     att.step("matched to CRSP", len(df), why="permno present in crsp.msenames")
-    att.write("output/attrition.csv")
+    att.write()                       # -> output/attrition_sample.csv
+    # or att.write("output/attrition_02_match.csv") for an explicit path
 
 Output CSV columns: step, n_remaining, n_dropped, why.
 n_dropped is filled automatically from the previous step's n_remaining when you
@@ -23,6 +24,7 @@ explicitly if you want a different accounting.
 """
 
 import csv
+import numbers
 from pathlib import Path
 
 
@@ -32,24 +34,29 @@ class Attrition:
         self.rows = []  # each row: {step, n_remaining, n_dropped, why}
 
     def step(self, step, n_remaining, n_dropped=None, why=""):
-        # Loud on misuse — a non-int count means the caller passed the wrong thing
-        # (e.g. a DataFrame instead of len(df)), and we want to fail now, not later.
-        assert isinstance(n_remaining, int), (
-            f"n_remaining must be int, got {type(n_remaining).__name__} for step {step!r}"
+        # Loud on misuse — a non-integer count means the caller passed the wrong
+        # thing (e.g. a DataFrame/Series instead of len(df)), and we want to fail
+        # now, not later. numbers.Integral accepts both Python int and numpy int
+        # types (what .sum()/.count()/groupby counts return), and rejects floats
+        # and non-scalars.
+        assert isinstance(n_remaining, numbers.Integral), (
+            f"n_remaining must be an integer count, got {type(n_remaining).__name__} "
+            f"for step {step!r}"
         )
+        n_remaining = int(n_remaining)  # normalize numpy int -> clean CSV value
         # Infer rows dropped from the previous step when not given explicitly.
         if n_dropped is None and self.rows:
             n_dropped = self.rows[-1]["n_remaining"] - n_remaining
         self.rows.append({
             "step": step,
             "n_remaining": n_remaining,
-            "n_dropped": "" if n_dropped is None else n_dropped,
+            "n_dropped": "" if n_dropped is None else int(n_dropped),
             "why": why,
         })
 
-    def write(self, path):
+    def write(self, path=None):
         assert self.rows, "no attrition steps recorded — call .step() before .write()"
-        path = Path(path)
+        path = Path(path) if path is not None else Path("output") / f"attrition_{self.name}.csv"
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=["step", "n_remaining", "n_dropped", "why"])

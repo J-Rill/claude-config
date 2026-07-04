@@ -77,8 +77,8 @@ For real empirical pipelines (multi-step cleaning, analysis that produces number
 - **Commit in bounded checkpoints.** One logical step per commit at meaningful points (pull → clean → merge → compute → estimate), with a message saying *why*, not just *what*. I review diffs, not whole codebases.
 - **DECISIONS.md and LOG.md on request.** Record judgment calls (choice, rejected alternatives, confidence) and a plain-language run narrative when I ask — use the `verification-trail` skill so the format stays consistent.
 - **Make attrition auditable.** After every filter, merge, or drop, report N before → after and why. In a pipeline, write it to an attrition table (`step, n_remaining, n_dropped, why`) in the Python cleaning stage, don't just mention it in chat.
-- **No number typed by hand.** Every number and figure in a draft comes from a script-generated output file — Python cleaning feeds Stata regressions, which write the row-only `\ExpandableInput` `.tex` fragments. Text ingests generated outputs; it never hardcodes a coefficient.
-- **Keep provenance traceable.** I should be able to trace any reported number back through table → script → commit → logged decision, across the Python → Stata handoff.
+- **No number typed by hand.** Every number and figure in a draft comes from a script-generated output file — typically Python cleaning → Stata regressions writing the row-only `\ExpandableInput` `.tex` fragments (or statsmodels when a project stays entirely in Python). Text ingests generated outputs; it never hardcodes a coefficient.
+- **Keep provenance traceable.** I should be able to trace any reported number back through table → script → commit → logged decision, across whatever cleaning → regression handoff the project uses.
 - **Never fake the trail.** Only log decisions and steps that actually happened. Don't record a robustness check, run, or result that wasn't performed — a clean-looking trail documenting work you didn't do is worse than no trail.
 
 ## Other

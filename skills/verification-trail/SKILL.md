@@ -6,9 +6,9 @@ description: >
   (methodological choices, rejected alternatives, confidence) and LOG.md (a
   plain-language narrative of what each stage actually did). Use when the user
   says "log this decision", "record why we chose", "update DECISIONS.md", "add a
-  decision", "update the log", "log this stage", "write up what we did", "update
-  the trail", or after a non-obvious methodological choice / a data step worth
-  narrating in an empirical pipeline. Records ONLY what actually happened — never
+  decision", "update the log", "log this stage", "add a LOG.md entry", "checkpoint
+  this", "update the trail", or after a non-obvious methodological choice / a data
+  step worth narrating in an empirical pipeline. Records ONLY what actually happened — never
   fabricates. Distinct from PROGRESS.md (progress-tracker skill — transient
   session state and next steps) and restart.md (restart skill — context handoff
   before /clear); those are ephemeral, this is the durable research record.
@@ -37,8 +37,8 @@ work stays checkable one bounded piece at a time.
 
 - Request is about a **choice / tradeoff / "why"** ("log this decision", "record why
   we chose X over Y") → **DECISIONS.md**.
-- Request is about **what a stage/script did** ("log this stage", "write up what we
-  did", "update the log") → **LOG.md**.
+- Request is about **what a stage/script did** ("log this stage", "add a LOG.md
+  entry", "update the log") → **LOG.md**.
 - Request says **"the trail" / "checkpoint this"** → update **both** (a decision
   entry if a judgment call was made, and a stage entry for the run).
 
@@ -120,9 +120,11 @@ att.step("drop penny stocks", len(df), why="offer price < $5")
 att.write("output/attrition.csv")
 ```
 
-Then reference the CSV from the relevant LOG.md stage. (Cleaning is in Python; the
-provenance chain continues into Stata regressions and the row-only `\ExpandableInput`
-`.tex` fragments — no number in the draft is typed by hand.)
+Then reference the CSV from the relevant LOG.md stage. Keep the provenance chain
+unbroken from cleaning through to the draft — no number in the draft is typed by
+hand: it flows from a generated output file into whatever writes the final table
+(typically a Stata `.do` file emitting row-only `\ExpandableInput` `.tex` fragments,
+or statsmodels when the whole pipeline stays in Python).
 
 ## Anti-patterns
 
