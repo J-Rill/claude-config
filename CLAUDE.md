@@ -69,6 +69,18 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 
 AFTER EVERY BIG CHANGE, LAUNCH A SONNET SUBAGENT TO REVIEW YOUR CHANGES FOR ISSUES. IF ANY ISSUES ARE FOUND, ADD A NEW ROUND OF AUDITING AFTER FIXING THE CURRENT ROUND'S ISSUES (EVEN IF THERE ARE ONLY MINOR CHANGES). ITERATE UNTIL DONE.
 
+## Verification and provenance
+
+For real empirical pipelines (multi-step cleaning, analysis that produces numbers or figures I'll use), leave a trail I can check without redoing the work — AI has made producing results cheap, but verifying them is still expensive. Scope this to actual pipelines, not one-off edits, quick lookups, or throwaway scripts.
+
+- **Set up the trail before the work.** For a new analysis project, use git from the outset (not retroactively). Ask whether I want DECISIONS.md / LOG.md before generating results, not after.
+- **Commit in bounded checkpoints.** One logical step per commit at meaningful points (pull → clean → merge → compute → estimate), with a message saying *why*, not just *what*. I review diffs, not whole codebases.
+- **DECISIONS.md and LOG.md on request.** Record judgment calls (choice, rejected alternatives, confidence) and a plain-language run narrative when I ask — use the `verification-trail` skill so the format stays consistent.
+- **Make attrition auditable.** After every filter, merge, or drop, report N before → after and why. In a pipeline, write it to an attrition table (`step, n_remaining, n_dropped, why`) in the Python cleaning stage, don't just mention it in chat.
+- **No number typed by hand.** Every number and figure in a draft comes from a script-generated output file — Python cleaning feeds Stata regressions, which write the row-only `\ExpandableInput` `.tex` fragments. Text ingests generated outputs; it never hardcodes a coefficient.
+- **Keep provenance traceable.** I should be able to trace any reported number back through table → script → commit → logged decision, across the Python → Stata handoff.
+- **Never fake the trail.** Only log decisions and steps that actually happened. Don't record a robustness check, run, or result that wasn't performed — a clean-looking trail documenting work you didn't do is worse than no trail.
+
 ## Other
 
 - Don't write tests, type stubs, or markdown documentation files unless I ask.

@@ -55,8 +55,11 @@ Grouped by stage of the research process.
 
 ### Review and verification
 
+These skills, together with the *Verification and provenance* section of `CLAUDE.md`, apply software-engineering review discipline to AI-assisted research: the cost of *producing* results has collapsed but the cost of *verifying* them has not, so the setup leaves a checkable trail (decisions, run narrative, attrition, provenance) rather than accumulating unchecked output.
+
 | Skill | What it does |
 |---|---|
+| `verification-trail` | Maintains a project's `DECISIONS.md` (methodological choices, rejected alternatives, confidence) and `LOG.md` (plain-language run narrative), plus a reusable Python attrition helper, so work stays verifiable without rerunning it. Records only what actually happened. |
 | `review-paper` | Manuscript review with single-pass, adversarial critic–fixer, and simulated peer-review (editor + referees) modes. |
 | `review-plan` / `review-plan-auto` | Stress-tests a plan with expert critique; the `-auto` variant iterates until no critical issues remain. |
 | `verify-claims` | Runs Chain-of-Verification on a draft in a fresh context, flagging claims as supported, contradicted, or unverifiable. |
