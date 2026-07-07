@@ -1,25 +1,25 @@
 ---
 name: proofread
-description: Read-only proofreading pass over lecture `.tex` or `.qmd` files. Checks grammar, typos, overflow, terminology consistency, and academic writing quality; produces a report without editing. Use when user says "proofread", "check for typos", "look for grammar issues", "copy-edit this", "any writing errors?", or before a lecture release.
+description: Read-only proofreading pass over paper manuscript files (`.tex`, `.md`). Checks grammar, typos, overflow, terminology consistency, and academic writing quality; produces a report without editing. Use when user says "proofread", "check for typos", "look for grammar issues", "copy-edit this", "any writing errors?", or before a paper submission.
 argument-hint: "[filename or 'all']"
 allowed-tools: ["Read", "Grep", "Glob", "Write", "Task"]
 ---
 
-# Proofread Lecture Files
+# Proofread Manuscript Files
 
-Run the mandatory proofreading protocol on lecture files. This produces a report of all issues found WITHOUT editing any source files.
+Run the proofreading protocol on paper manuscript files. This produces a report of all issues found WITHOUT editing any source files.
 
 ## Steps
 
 1. **Identify files to review:**
    - If `$ARGUMENTS` is a specific filename: review that file only
-   - If `$ARGUMENTS` is "all": review all lecture files in `Slides/` and `Quarto/`
+   - If `$ARGUMENTS` is "all": review all manuscript files (`.tex`, `.md`) in the project
 
-2. **For each file, launch the proofreader agent** that checks for:
+2. **For each file, run a proofreading pass** (optionally via a fresh-context subagent) checking for:
 
    **GRAMMAR:** Subject-verb agreement, articles (a/an/the), prepositions, tense consistency
    **TYPOS:** Misspellings, search-and-replace artifacts, duplicated words
-   **OVERFLOW:** Overfull hbox (LaTeX), content exceeding slide boundaries (Quarto)
+   **OVERFLOW:** Overfull hbox (LaTeX), lines or tables exceeding page/margin boundaries
    **CONSISTENCY:** Citation format, notation, terminology
    **ACADEMIC QUALITY:** Informal language, missing words, awkward constructions
 
@@ -30,8 +30,7 @@ Run the mandatory proofreading protocol on lecture files. This produces a report
    - Category and severity
 
 4. **Save each report** to `quality_reports/`:
-   - For `.tex` files: `quality_reports/FILENAME_report.md`
-   - For `.qmd` files: `quality_reports/FILENAME_qmd_report.md`
+   - `quality_reports/FILENAME_report.md`
 
 5. **IMPORTANT: Do NOT edit any source files.**
    Only produce the report. Fixes are applied separately after user review.
