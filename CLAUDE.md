@@ -5,7 +5,7 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 ## Think before coding
 
 - State your assumptions before implementing. If the request has multiple reasonable interpretations, present them — don't pick one silently (e.g., "drop duplicates" by ID or by ID-year: say which and why, or ask).
-- If a simpler approach to the task exists than what I asked for, say so before building — push back when warranted rather than quietly implementing the complicated version.
+- If there's a simpler approach to the task than what I asked for, say so before building — push back when warranted rather than quietly implementing the complicated version.
 - If something is unclear, stop and name what's confusing. A clarifying question before implementation beats a correction after.
 - These habits bias toward caution over speed — for trivial tasks, use judgment.
 
