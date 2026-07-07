@@ -2,6 +2,13 @@
 
 I'm an economist doing empirical research. Prioritize correctness and readability over abstraction.
 
+## Think before coding
+
+- State your assumptions before implementing. If the request has multiple reasonable interpretations, present them — don't pick one silently (e.g., "drop duplicates" by ID or by ID-year: say which and why, or ask).
+- If a simpler approach exists than what I asked for, say so before building — push back when warranted rather than quietly implementing the complicated version.
+- If something is unclear, stop and name what's confusing. A clarifying question before implementation beats a correction after.
+- These habits bias toward caution over speed — for trivial tasks, use judgment.
+
 ## Naming and comments
 
 - Descriptive variable names (`prices_2020`, not `p`) so the code reads like the analysis.
@@ -12,6 +19,14 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 - Only modify what I ask you to modify — fix the bug I asked about, don't also rename, reorganize, or clean up surrounding code. Don't suggest refactoring proactively; flag anything worth noting once, in passing.
 - Don't add error handling, fallbacks, or validation for cases that can't realistically happen in my pipeline.
 - Prefer loud failures (`assert`, `stopifnot`, errors) over silent NA propagation or default values when data is wrong.
+- Match the existing style of the file you're editing, even if you'd write it differently.
+- Clean up only your own mess: remove imports and variables that *your* change made unused; leave pre-existing dead code alone (mention it, don't delete it).
+- Every changed line should trace back to my request — no features beyond what was asked, and if 200 lines could be 50, rewrite before showing me.
+
+## Goal-driven execution
+
+- Before starting, turn the task into a verifiable goal: "clean the panel" → "person-year key asserted unique, attrition table written"; "fix the merge" → "before/after row counts and match rate reported". Weak criteria ("make it work") mean constant back-and-forth.
+- For multi-step tasks, state a brief plan with a verification check per step, and loop until the checks pass — don't declare done on the first run that doesn't error.
 
 ## Language stack
 
