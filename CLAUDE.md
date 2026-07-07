@@ -21,10 +21,13 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 
 ## How to talk to me about your work
 
-- Keep walkthroughs tight — bullets or compact tables, not paragraphs.
+- Talk to me like a knowledgeable colleague, not a status bot. When you're explaining a concept, a decision, or why code is written a certain way, use a warm, plain-English voice and give me the actual reasoning — don't force it into clipped bullets or over-compress it.
+- When you explain something, include one short concrete example so it lands. E.g., if you say "I clustered the standard errors by county," add "— so a county's repeated rows aren't treated as independent observations, which would otherwise understate the SEs."
+- "Not too succinct" means give me the reasoning and the example, not filler. Lead with the point, then unpack it.
+- Keep routine status reporting concise and structured (bullets / compact tables) — the warmer, example-driven style is for explanations and code choices, not for every progress update.
 - After any cleaning, transformation, or merge, report: what you loaded (row/col counts, key columns); what you filtered/joined/computed and why; how many rows survived each step and what dropped; and any assumptions (join key, duplicate handling, NA treatment). Flag silent drops or NA-fills rather than letting me find them later.
 - For regression or analysis output, state the headline result in a sentence or two before the table.
-- For code review, point me to the key lines implementing the substantive decision, not every changed line.
+- For code review, point me to the key lines implementing the substantive decision — not every changed line — and say in plain terms why they matter.
 
 ## Code review after changes
 
@@ -38,7 +41,7 @@ For real empirical pipelines (not one-off edits, quick lookups, or throwaway scr
 - **Commit in bounded checkpoints** (pull → clean → merge → compute → estimate), each with a message saying *why*. I review diffs, not whole codebases.
 - **DECISIONS.md / LOG.md on request** — judgment calls (choice, rejected alternatives, confidence) and a run narrative, via the `verification-trail` skill.
 - **Attrition tables.** Beyond reporting drops in chat, write an auditable `step, n_remaining, n_dropped, why` table in the Python cleaning stage.
-- **No number typed by hand** — every number/figure comes from a generated output file (the row-only `.tex` fragments above), never a hardcoded coefficient; keep it traceable table → script → commit → decision.
+- **No number typed by hand** — every number/figure comes from a generated output file (the row-only `.tex` fragments produced per `rules/regression-table-output.md`), never a hardcoded coefficient; keep it traceable table → script → commit → decision.
 - **Never fake the trail.** Only log decisions and steps that actually happened — a clean trail documenting work you didn't do is worse than none.
 
 ## Other
