@@ -2,7 +2,7 @@
 
 This repository is my personal [Claude Code](https://docs.claude.com/en/docs/claude-code) configuration, organized around the workflow of an empirical economist: ideating projects, reviewing literature, cleaning and analyzing data, writing and compiling papers, and reviewing drafts before submission.
 
-It is a versioned snapshot of my `~/.claude/` directory — the *skills*, *agents*, *commands*, and *rules* that I have accumulated, plus my global coding preferences (`CLAUDE.md`) and editor settings (`settings.json`). Keeping it under version control means the setup is reproducible across machines and the changes I make over time are tracked.
+It is a versioned snapshot of my `~/.claude/` directory — the *skills*, *agents*, *commands*, *rules*, and *references* that I have accumulated, plus my global coding preferences (`CLAUDE.md`) and editor settings (`settings.json`). The live `~/.claude/` is the git repository itself (an allowlist `.gitignore` keeps runtime state — history, sessions, caches — out), so changes I make over time are tracked directly.
 
 > **What is a "skill"?** In Claude Code, a skill is a self-contained Markdown instruction set (with optional helper scripts) that the agent loads on demand when a task matches its description. Think of each one as a documented, reusable procedure — e.g. "do a literature review" or "compile this LaTeX document" — rather than a one-off prompt.
 
@@ -15,7 +15,8 @@ It is a versioned snapshot of my `~/.claude/` directory — the *skills*, *agent
 ├── skills/          # Task procedures, loaded on demand (one folder each)
 ├── agents/          # Sub-agents that skills can delegate to
 ├── commands/        # Slash commands
-└── rules/           # Standing conventions injected into context
+├── rules/           # Standing conventions injected into context by file path
+└── references/      # Shared data files skills read (e.g. journal profiles)
 ```
 
 This mirrors the structure of `~/.claude/`, so installation is essentially "put these files where Claude Code expects them" (see [Installation](#installation)).
@@ -29,20 +30,19 @@ Grouped by stage of the research process.
 | Skill | What it does |
 |---|---|
 | `research-ideation` | Generates research questions, testable hypotheses, and candidate empirical strategies from a topic or dataset. |
-| `solving-model` | Sets up, solves, and verifies an economic model with step-by-step derivations and cross-checking. |
+| `solving-model` | Sets up, solves, and verifies an economic model with step-by-step derivations and an independent fresh-context re-derivation. |
 
 ### Literature
 
 | Skill | What it does |
 |---|---|
 | `lit-review` | Structured literature search and synthesis with citation extraction, thematic clustering, and gap identification. Produces a written review with BibTeX-ready citations. |
-| `pdf-chunker` | Reliable chunked extraction for reading, summarizing, or analyzing PDFs of any size. |
 
 ### Data analysis
 
 | Skill | What it does |
 |---|---|
-| `data-analysis` | End-to-end Python pipeline — exploration → cleaning → regression → publication-ready tables and figures. |
+| `data-analysis` | Python exploration + cleaning pipeline — load → explore → clean → analysis-ready dataset, diagnostics, and figures. Regression estimation and tables are handed to Stata. |
 | `spot-check` | Randomly samples rows from a script's output and fans out independent sub-agents to verify each result against the input data. |
 
 ### Writing and typesetting
@@ -51,11 +51,9 @@ Grouped by stage of the research process.
 |---|---|
 | `compile-latex` | Compiles LaTeX via the `xelatex → bibtex → xelatex → xelatex` pipeline. |
 | `overleaf` | Syncs a local clone of an Overleaf project over Git (pull/push). |
-| `proofread` | Read-only proofreading pass over `.tex`/`.qmd` files — grammar, typos, overflow, terminology, academic style. |
+| `proofread` | Read-only proofreading pass over paper manuscripts (`.tex`, `.md`) — grammar, typos, overflow, terminology, academic style. |
 
 ### Review and verification
-
-These skills, together with the *Verification and provenance* section of `CLAUDE.md`, apply software-engineering review discipline to AI-assisted research: the cost of *producing* results has collapsed but the cost of *verifying* them has not, so the setup leaves a checkable trail (decisions, run narrative, attrition, provenance) rather than accumulating unchecked output.
 
 | Skill | What it does |
 |---|---|
@@ -81,7 +79,8 @@ These skills, together with the *Verification and provenance* section of `CLAUDE
 | Agent | Role |
 |---|---|
 | `claim-verifier` | Fresh-context fact-checker for citations and numerical claims (used by `verify-claims`). |
-| `r-reviewer` | Reviews R scripts for correctness, reproducibility, and convention compliance. |
+| `model-verifier` | Fresh-context independent re-derivation of an economic model's math (used by `solving-model`). |
+| `editor` / `domain-referee` / `methods-referee` | The simulated peer-review panel for `review-paper --peer` (editor + two dispositioned referees). |
 
 ## Commands
 
@@ -91,23 +90,32 @@ These skills, together with the *Verification and provenance* section of `CLAUDE
 
 ## Rules
 
-Standing conventions kept short and injected into context: `content-invariants`, `post-flight-verification`, and `r-code-conventions`.
+Standing conventions, injected into context when editing the file types they govern:
+
+- `researcher-code-conventions` — straight-line numbered scripts, minimal abstraction (`.py`/`.do`/`.R`).
+- `regression-table-output` — row-only `.tex` table fragments for LaTeX (`.py`/`.do`/`.tex`/`.R`).
+
+## References
+
+Shared data files that skills read on demand:
+
+- `journal-profiles` / `journal-profile-template` — journal calibration data for `review-paper --peer [journal]`.
 
 ## Installation
 
-Clone the repository, then make Claude Code's config directory point at it. The simplest approach is to symlink each piece into `~/.claude/` so updates here propagate automatically:
+The live `~/.claude/` is itself the git repository (created with `git init` in place; an allowlist `.gitignore` tracks only the curated pieces and ignores runtime state). To reproduce this setup on another machine, clone the repo and copy the tracked pieces into `~/.claude/`:
 
 ```bash
 git clone https://github.com/<your-username>/claude-config.git
 cd claude-config
 
-# Back up anything you already have, then link these in:
-for item in skills agents commands rules CLAUDE.md settings.json; do
-  ln -sfn "$(pwd)/$item" "$HOME/.claude/$item"
+# Back up anything you already have, then copy these in:
+for item in skills agents commands rules references CLAUDE.md settings.json; do
+  cp -R "$item" "$HOME/.claude/"
 done
 ```
 
-Prefer to copy instead of symlink (so local edits don't touch the repo)? Replace the `ln -sfn` line with `cp -R`. Either way, **back up your existing `~/.claude/` first** if you already have a configuration you care about — these names will overwrite same-named files.
+Prefer symlinks (so updates in the clone propagate automatically)? Replace the `cp -R` line with `ln -sfn "$(pwd)/$item" "$HOME/.claude/$item"`. Either way, **back up your existing `~/.claude/` first** if you already have a configuration you care about — these names will overwrite same-named files.
 
 `settings.local.json` is intentionally git-ignored: it holds machine-specific overrides that should not be shared.
 
