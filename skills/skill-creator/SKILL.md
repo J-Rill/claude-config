@@ -383,7 +383,7 @@ Present the eval set to the user for review using the HTML template:
    - `__EVAL_DATA_PLACEHOLDER__` → the JSON array of eval items (no quotes around it — it's a JS variable assignment)
    - `__SKILL_NAME_PLACEHOLDER__` → the skill's name
    - `__SKILL_DESCRIPTION_PLACEHOLDER__` → the skill's current description
-3. Write to a temp file (e.g., `/tmp/eval_review_<skill-name>.html`) and open it: `open /tmp/eval_review_<skill-name>.html`
+3. Write to a unique scratch dir (a fresh `mktemp -d` avoids collisions across concurrent eval runs) and open it: `D=$(mktemp -d); open "$D/eval_review_<skill-name>.html"`
 4. The user can edit queries, toggle should-trigger, add/remove entries, then click "Export Eval Set"
 5. The file downloads to `~/Downloads/eval_set.json` — check the Downloads folder for the most recent version in case there are multiple (e.g., `eval_set (1).json`)
 
@@ -454,8 +454,8 @@ In Claude.ai, the core workflow is the same (draft → test → review → impro
 
 **Updating an existing skill**: The user might be asking you to update an existing skill, not create a new one. In this case:
 - **Preserve the original name.** Note the skill's directory name and `name` frontmatter field -- use them unchanged. E.g., if the installed skill is `research-helper`, output `research-helper.skill` (not `research-helper-v2`).
-- **Copy to a writeable location before editing.** The installed skill path may be read-only. Copy to `/tmp/skill-name/`, edit there, and package from the copy.
-- **If packaging manually, stage in `/tmp/` first**, then copy to the output directory -- direct writes may fail due to permissions.
+- **Copy to a writeable location before editing.** The installed skill path may be read-only. Copy to a fresh scratch dir (`WORK=$(mktemp -d)/skill-name`), edit there, and package from the copy.
+- **If packaging manually, stage in a scratch dir first** (`$(mktemp -d)`), then copy to the output directory -- direct writes may fail due to permissions.
 
 ---
 

@@ -76,7 +76,7 @@ Distill into 3-5 key principles relevant to this plan.
 **Fresh-context review (preferred):**
 Launch a subagent to perform the critique. This avoids the bias of reviewing your own plan.
 
-Use the Task tool with `subagent_type="general-purpose"` and a prompt containing:
+Use the Agent tool with `subagent_type="general-purpose"` and a prompt containing:
 - The full plan text
 - The 6 review dimensions listed below
 - The best practices distilled from Step 3

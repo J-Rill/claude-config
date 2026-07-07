@@ -27,50 +27,12 @@ Parse `$ARGUMENTS` for flags. **If `$ARGUMENTS` is `help`, print the table below
 | Max passes | `max:N` | `4` | Hard cap on automated passes |
 | Dry run | `dryrun` | Off | Show role + research plan only |
 
-### Step 1: Locate and Read the Plan
+### Steps 1-3: Locate plan, assign role, research best practices
 
-Four-tier priority:
-1. **Explicit file** — `file:path/to/plan.md` argument
-2. **Project-local plans** — search for `plan*.md` files in the current project's `notes/`, `plans/`, or `pap/` subdirectories (including additional working directories). Prefer the most recently modified match.
-3. **Plan-mode file** — most recent file in `~/.claude/plans/`
-4. **Conversation history** — scan the current session for the plan
+Identical to **Steps 1–3 of `/review-plan`** (`@~/.claude/skills/review-plan/SKILL.md`) — locate the plan (four-tier priority), assign an expert role from the domain-signal table, and research best practices — with two auto-mode deltas:
 
-If no plan found:
-> "No plan found. Usage: `/review-plan-auto` (after plan mode) or `/review-plan-auto file:path/to/plan.md`"
-
-Record the plan source (file path or "conversation") for the final summary.
-
-### Step 2: Assign Expert Role
-
-Infer the domain from plan content:
-
-| Domain signals | Assigned role |
-|---------------|---------------|
-| skill, command, agent, MCP, Claude Code | AI engineering and skill design specialist |
-| proposal, grant, funder, budget | Grant strategy and research funding specialist |
-| paper, manuscript, identification, regression | Academic research methodology specialist |
-| project management, tracker, workflow, dashboard | Operations and project management specialist |
-| data, analysis, pipeline, code, replication | Data science and reproducibility specialist |
-| Default (no strong signal) | Strategic planning and implementation specialist |
-
-If `role:"..."` is provided, use that instead.
-
-**Announce:** "**Reviewing as:** Meticulous [role]. (Override with `role:"your role"` if this doesn't fit.)"
-
-### Step 3: Research Best Practices
-
-Extract the plan's primary domain and approach. Build web search queries:
-- Query A: "[approach] best practices [year]"
-- Query B: "[domain] common pitfalls"
-- Query C (deep only): "[specific methodology] implementation guide"
-
-| Depth | Web searches |
-|-------|-------------|
-| `quick` | 0 — skip entirely |
-| `standard` | 2 (queries A + B) |
-| `deep` | 3-4 (all queries) |
-
-Distill into 3-5 key principles relevant to this plan. These are reused across all passes (no repeat research).
+- **Step 1:** use the `/review-plan-auto` usage string in the "no plan found" message, and record the plan source (file path or "conversation") for the final summary.
+- **Step 3:** the distilled 3–5 principles are reused across all passes (no repeat research).
 
 ### Step 4: Automated Review Loop
 
