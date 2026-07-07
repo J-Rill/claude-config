@@ -74,4 +74,3 @@ After formatting, check whether the task is better suited to a different capabil
 
 **For `/prompt`**: Add a brief note before executing if a capability gap is relevant.
 **For `/prompt-only`**: Note any capability gap after the code block.
-**For `/prompt-refine`**: Note in the changes list if the refined prompt has a capability constraint.
