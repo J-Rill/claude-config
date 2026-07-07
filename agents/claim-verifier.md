@@ -64,9 +64,9 @@ If the question itself is ill-posed (the claim doesn't make a verifiable factual
 
 Each per-claim finding now carries a **severity tier** (v1.9.0):
 
-- **HIGH-WARN** — fabricated reference (cited paper does NOT exist at the named venue/year), direct contradiction between draft and source, or `not_found` retrieval that you interpret as a hallucinated citation. These block `/commit` via `/verify-claims`.
+- **HIGH-WARN** — fabricated reference (cited paper does NOT exist at the named venue/year), direct contradiction between draft and source, or `not_found` retrieval that you interpret as a hallucinated citation. `/verify-claims` surfaces these as do-not-commit warnings.
 - **MED-WARN** — transient infrastructure failure: DOI resolver timed out, partial PDF read, paywall the cache normally bypasses. The author should re-run the verification later or supply a local copy.
-- **LOW-WARN** — source genuinely inaccessible (paywalled with no cache hit, private dataset, pre-print server transient). Surface but do not gate-refuse — the claim may still be correct; the verifier just can't independently confirm.
+- **LOW-WARN** — source genuinely inaccessible (paywalled with no cache hit, private dataset, pre-print server transient). Surface but non-blocking — the claim may still be correct; the verifier just can't independently confirm.
 
 ```markdown
 ## Claim Verification Report
@@ -82,7 +82,7 @@ Each per-claim finding now carries a **severity tier** (v1.9.0):
 |----|--------------|---------------------|----------|--------|------|
 | C1 | [quoted claim] | [what source says] | [quote + loc] | yes / partial / no / cannot-verify | — / LOW / MED / HIGH |
 
-### HIGH-WARN (gate-refuse `/commit`)
+### HIGH-WARN (do not commit until resolved)
 
 - **C3** — draft says "N = 10,000" but the paper's Table 1 shows N = 1,000. Evidence: Table 1, page 7. **Tier: HIGH** (direct contradiction).
 - **C7** — draft cites "Imbens and Rubin (2015)" for a claim that appears only in Imbens and Wooldridge (2009). Evidence: grep of both papers. **Tier: HIGH** (fabricated attribution).
@@ -107,7 +107,7 @@ Each per-claim finding now carries a **severity tier** (v1.9.0):
 - A directional contradiction (draft says "positive effect", source says "negative effect") is **always HIGH-WARN**.
 - A paraphrase mismatch where the draft's gloss is a reasonable summary of the source — not HIGH-WARN. Flag as `partial` with no tier (or LOW if you want to surface the gloss difference).
 
-Be conservative on HIGH-WARN. It blocks `/commit`. False positives erode the gate's authority; false negatives let known-bad claims ship.
+Be conservative on HIGH-WARN. It tells the user not to commit. False positives erode the warning's authority; false negatives let known-bad claims ship.
 
 ## What you DO NOT do
 
@@ -118,6 +118,5 @@ Be conservative on HIGH-WARN. It blocks `/commit`. False positives erode the gat
 
 ## Cross-references
 
-- `.claude/rules/post-flight-verification.md` — the protocol callers follow.
-- `.claude/skills/verify-claims/SKILL.md` — user-facing wrapper.
+- `.claude/skills/verify-claims/SKILL.md` — user-facing wrapper and home of the CoVe protocol that callers follow.
 - MEMORY.md `[LEARN:pattern]` — why CoVe (Dhuliawala et al. 2023) is architecturally different from critic-fixer.

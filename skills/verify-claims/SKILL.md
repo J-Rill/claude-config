@@ -7,7 +7,7 @@ allowed-tools: ["Read", "Grep", "Glob", "Task", "Write"]
 
 # /verify-claims — Chain-of-Verification on a Draft
 
-Fact-check a draft using the **Post-Flight Verification protocol** ([`.claude/rules/post-flight-verification.md`](../../rules/post-flight-verification.md)).
+Fact-check a draft using **Chain-of-Verification (CoVe)** — the post-drafting verification protocol defined in this skill and reused by `/lit-review`, `/research-ideation`, and `/review-paper --peer`.
 
 **Input:** `$ARGUMENTS` — path to a file containing the draft (markdown, .qmd, .tex, .md) or a shorthand pointer. Optional flags:
 
@@ -17,7 +17,7 @@ Fact-check a draft using the **Post-Flight Verification protocol** ([`.claude/ru
 ## When to pick this skill
 
 - **`/verify-claims`** (this skill) — ad-hoc fact-checking on any draft or text block the user hands you. One-shot, user-invoked.
-- **Other skills that auto-run Post-Flight internally** (`/lit-review`, `/research-ideation`, `/respond-to-referees`, `/review-paper --peer`) — no need to call this separately; they already run it.
+- **Other skills that auto-run this check internally** (`/lit-review`, `/research-ideation`, `/review-paper --peer`) — no need to call this separately; they already run it.
 - **`/proofread`** — grammar, typos, overflow. Different lens.
 - **`/review-paper`** (default mode) — full manuscript review, not just claim verification.
 
@@ -74,19 +74,19 @@ The forked agent runs the CoVe independent-answer step. It has never seen the dr
 
 The verifier returns a per-claim verdict in **one of three severity tiers** (v1.9.0):
 
-- **HIGH-WARN** — fabricated reference (the cited paper doesn't exist at the named venue/year), draft claim directly contradicted by the source, or `not_found` retrieval that the verifier interprets as a hallucinated citation. **Gate-refuse** — these block `/commit` for any file `/verify-claims` was just run against, unless the user explicitly overrides with `--no-fail-closed` or sets `verifyClaims.allowHighWarn: true` in `.claude/settings.json`.
-- **MED-WARN** — transient infrastructure / retrieval failure (paywall the verifier can normally bypass via cached metadata; DOI resolver timeout; partial PDF read). Surface for the author; do not gate-refuse.
-- **LOW-WARN** — source genuinely inaccessible (paywalled and not in cache; private dataset; pre-print server transient). Surface with `cannot-verify` flag; do not gate-refuse.
+- **HIGH-WARN** — fabricated reference (the cited paper doesn't exist at the named venue/year), draft claim directly contradicted by the source, or `not_found` retrieval that the verifier interprets as a hallucinated citation. **Blocking severity** — surface a prominent warning and advise the user **not to commit** the affected file until the claim is fixed, unless they accept the risk (or pass `--no-fail-closed`).
+- **MED-WARN** — transient infrastructure / retrieval failure (paywall the verifier can normally bypass via cached metadata; DOI resolver timeout; partial PDF read). Surface for the author; non-blocking.
+- **LOW-WARN** — source genuinely inaccessible (paywalled and not in cache; private dataset; pre-print server transient). Surface with `cannot-verify` flag; non-blocking.
 
 Verdict aggregation by tier across all extracted claims:
 
-| Tier counts | Outcome | `/commit` behaviour |
+| Tier counts | Outcome | Recommended action |
 |---|---|---|
-| 0 HIGH, 0 MED, ≥ 0 LOW | **PASS** (green block) | proceeds |
-| 0 HIGH, ≥ 1 MED, any LOW | **PARTIAL** (yellow block) | proceeds with warning |
-| ≥ 1 HIGH | **FAIL** (red block) | **halts** unless override |
+| 0 HIGH, 0 MED, ≥ 0 LOW | **PASS** (green block) | safe to commit |
+| 0 HIGH, ≥ 1 MED, any LOW | **PARTIAL** (yellow block) | commit with the flagged claims noted |
+| ≥ 1 HIGH | **FAIL** (red block) | **do not commit** the affected file until resolved (or override) |
 
-`--no-fail-closed` opts out of the gate-refuse behaviour on HIGH-WARN. Use sparingly — it's there for offline / hallucination-sensitive contexts where the user accepts the risk in writing.
+`--no-fail-closed` downgrades HIGH-WARN to a non-blocking warning. Use sparingly — it's there for offline / hallucination-sensitive contexts where the user accepts the risk in writing.
 
 If the draft is writeable and the user asked for auto-correction, regenerate the affected sections using the verifier's evidence. Otherwise return the report and let the user decide.
 
@@ -132,5 +132,4 @@ Expected output (abridged):
 ## Cross-references
 
 - [`.claude/agents/claim-verifier.md`](../../agents/claim-verifier.md) — the forked verifier.
-- [`.claude/rules/post-flight-verification.md`](../../rules/post-flight-verification.md) — the protocol.
 - MEMORY.md `[LEARN:pattern]` on Chain-of-Verification vs critic-fixer vs cross-artifact review.

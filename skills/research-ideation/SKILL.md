@@ -1,6 +1,6 @@
 ---
 name: research-ideation
-description: Generate structured research questions, testable hypotheses, and candidate empirical strategies from a topic, phenomenon, or dataset description. Use when user says "give me research ideas on X", "brainstorm questions about Y", "what could I study with this data?", "I'm looking for a paper idea on...", "generate hypotheses for...". One-shot generation, not multi-turn. For idea-refinement use `/interview-me`.
+description: Generate structured research questions, testable hypotheses, and candidate empirical strategies from a topic, phenomenon, or dataset description. Use when user says "give me research ideas on X", "brainstorm questions about Y", "what could I study with this data?", "I'm looking for a paper idea on...", "generate hypotheses for...". One-shot generation, not multi-turn.
 argument-hint: "[topic, phenomenon, or dataset description] [--no-verify]"
 allowed-tools: ["Read", "Grep", "Glob", "Write", "WebSearch", "WebFetch", "Task"]
 ---
@@ -31,9 +31,9 @@ Generate structured research questions, testable hypotheses, and empirical strat
    - `descriptive` (measurement, data construction, pattern documentation)
    - `formal-theory` (pure theory, no empirical test in this paper)
    - `survey-experiment` (vignette, conjoint, list-experiment)
-   - `unsure` (when multiple types are plausible — the user can pick later via `/interview-me`)
+   - `unsure` (when multiple types are plausible — the user can refine later)
 
-   Use `.claude/references/discipline-cards.md` to bias the distribution by field (econ vs poli-sci default frequencies differ — e.g., poli-sci skews more toward `survey-experiment` and `formal-theory` than econ does).
+   Bias the distribution by field where relevant (e.g., political science skews more toward `survey-experiment` and `formal-theory` than economics does).
 
 4. **For each research question, develop:**
    - **Hypothesis:** A testable prediction with expected sign/magnitude
@@ -108,7 +108,7 @@ Generate structured research questions, testable hypotheses, and empirical strat
 
 ## Post-Flight Verification (mandatory, CoVe)
 
-Before returning the ideation report, run the Post-Flight Verification protocol from [`.claude/rules/post-flight-verification.md`](../../rules/post-flight-verification.md). Research ideation is hallucination-prone in three specific ways:
+Before returning the ideation report, run the Chain-of-Verification protocol — the same one `/verify-claims` implements (see [`.claude/skills/verify-claims/SKILL.md`](../../skills/verify-claims/SKILL.md)). Research ideation is hallucination-prone in three specific ways:
 
 1. **Negative-literature claims** — "no prior work studies X" is frequently wrong.
 2. **Dataset structure claims** — "The CPS contains field `educ_attain`" can be confidently wrong about variable names, coverage years, or restricted-access status.
