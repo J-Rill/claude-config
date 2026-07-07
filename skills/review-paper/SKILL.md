@@ -1,7 +1,7 @@
 ---
 name: review-paper
-description: Comprehensive manuscript review with three modes: single-pass (default), --adversarial critic-fixer loop, and --peer [journal] simulated peer-review pipeline (editor + 2 dispositioned referees + editorial decision, calibrated to a target journal). R&R continuation via --peer --r2/--r3; hostile-editor stress test via --peer --stress. Auto-invokes /review-r + /audit-reproducibility on referenced scripts unless --no-cross-artifact.
-argument-hint: "[paper path] [--adversarial | --peer <journal> [--r2 | --r3 | --stress] [--no-novelty-check]] [--no-cross-artifact]"
+description: Comprehensive manuscript review with three modes: single-pass (default), --adversarial critic-fixer loop, and --peer [journal] simulated peer-review pipeline (editor + 2 dispositioned referees + editorial decision, calibrated to a target journal). R&R continuation via --peer --r2/--r3; hostile-editor stress test via --peer --stress.
+argument-hint: "[paper path] [--adversarial | --peer <journal> [--r2 | --r3 | --stress] [--no-novelty-check]]"
 allowed-tools: ["Read", "Grep", "Glob", "Write", "Edit", "Bash", "Task"]
 ---
 
@@ -12,9 +12,7 @@ Produce a thorough, constructive review of an academic manuscript — the kind o
 > **Which review skill do I want?**
 >
 > - **`/review-paper`** (this skill) — single comprehensive report, optional `--adversarial` critic-fixer loop, or `--peer <journal>` simulated peer-review pipeline. Best for **most drafts**.
-> - **`/seven-pass-review`** — seven independent lenses in parallel (abstract, intro, methods, results, robustness, prose, citations) then synthesized. Heavier (7× token cost). Best for **submission-ready drafts** or **R&R stage** where you need maximum coverage.
-> - **`/respond-to-referees`** — if you already have referee comments and need a response document, not another review.
-> - **`/slide-excellence`** — for lecture slides, not papers.
+> - **`/strategic-revision`** — if you already have referee comments and need a dependency-mapped revision plan, not another review.
 
 **Input:** `$ARGUMENTS` — path to a paper (`.tex`, `.pdf`, or `.qmd`), or a filename in `master_supporting_docs/`. Optional flags:
 
@@ -23,9 +21,8 @@ Produce a thorough, constructive review of an academic manuscript — the kind o
 - `--r2` / `--r3` — R&R continuation mode (requires `--peer`). Reloads prior round, classifies concerns Resolved / Partial / Not addressed.
 - `--stress` — hostile-editor stress test (requires `--peer`). Forces SKEPTIC dispositions, doubles critical peeves.
 - `--no-novelty-check` — skip editor's WebSearch novelty probe (default is ON).
-- `--no-cross-artifact` — skip auto-invocation of `/review-r` + `/audit-reproducibility` on referenced scripts.
 
-> **Already received referee comments?** Use [`/respond-to-referees`](../respond-to-referees/SKILL.md) instead. That skill cross-references each referee concern against the revised manuscript and drafts a complete response document.
+> **Already received referee comments?** Use [`/strategic-revision`](../strategic-revision/SKILL.md) instead. That skill builds a dependency-mapped revision plan from the referee reports, with a validated DAG and critical-path analysis.
 
 ---
 
@@ -37,7 +34,7 @@ One comprehensive review report. Fast, low token cost, suitable for early drafts
 
 ### Adversarial mode (`--adversarial`)
 
-Iterative critic-fixer loop modeled on [`/qa-quarto`](../qa-quarto/SKILL.md). The critic identifies issues, the fixer proposes and applies edits (with user approval), and the critic re-audits. Loops until APPROVED or max 5 rounds.
+Iterative critic-fixer loop. The critic identifies issues, the fixer proposes and applies edits (with user approval), and the critic re-audits. Loops until APPROVED or max 5 rounds.
 
 Use when: preparing a pre-submission draft, responding to a journal-desk rejection with substantive revisions, or after your own major rewrite. Costs more tokens but produces a manuscript the critic has signed off on.
 
@@ -64,7 +61,7 @@ This mode is materially different from `--adversarial`: adversarial runs the sam
 
 ## Steps (both modes)
 
-1. **Locate and read the manuscript.** First strip flags (`--adversarial`, `--no-cross-artifact`) from `$ARGUMENTS` to get the bare manuscript path. Check:
+1. **Locate and read the manuscript.** First strip flags from `$ARGUMENTS` to get the bare manuscript path. Check:
    - Direct path (bare path from step 1)
    - `master_supporting_docs/supporting_papers/$ARGUMENTS`
    - Glob for partial matches
@@ -78,12 +75,6 @@ This mode is materially different from `--adversarial`: adversarial runs the sam
 5. **Produce the review report.**
 
 6. **Save to** `quality_reports/paper_review_[sanitized_name]_round[N].md` (N=1 in default mode; N increments in adversarial mode).
-
-6b. **Cross-artifact integration.** Unless `$ARGUMENTS` contains `--no-cross-artifact`, and if the manuscript references analysis scripts (detected via `\input{scripts/...}`, `%% source:` comments, or matching `scripts/python/_outputs/` or `scripts/R/_outputs/` filenames), auto-invoke:
-   - `/review-r` on each referenced script (forked subagent, results to `quality_reports/cross_artifact_[paper]/review_r_*.md`)
-   - `/audit-reproducibility` on the manuscript + outputs dir (results to `quality_reports/cross_artifact_[paper]/reproducibility.md`)
-
-   Merge critical cross-artifact findings (code bug invalidates paper claim, reproducibility FAIL) into a new "Cross-Artifact Findings" section at the top of the paper review report. See [`.claude/rules/cross-artifact-review.md`](../../rules/cross-artifact-review.md) for the full protocol.
 
 7. **If `--adversarial` is in `$ARGUMENTS`:** invoke the critic-fixer loop defined in the next section. Otherwise stop here.
 
@@ -216,7 +207,7 @@ These are the tough questions a top referee would likely raise:
 
 **Only runs if `--adversarial` is in `$ARGUMENTS`.**
 
-Pattern adapted from [`/qa-quarto`](../qa-quarto/SKILL.md), which uses the same loop to iterate on slide quality. Papers get it now because the single-pass review leaves authors doing manual fix-and-resubmit cycles.
+This critic-fixer pattern is used because the single-pass review otherwise leaves authors doing manual fix-and-resubmit cycles.
 
 ### Flow
 
@@ -308,13 +299,7 @@ After the loop ends, write `quality_reports/paper_review_[sanitized_name]_FINAL.
 
 ## `--peer [journal]` workflow detail
 
-### Phase 0: Cross-artifact pre-flight (runs BEFORE desk review in --peer mode)
-
-Unless `--no-cross-artifact` is set, auto-invoke `/audit-reproducibility` on the manuscript + its outputs directory *first*. Any reproducibility FAIL becomes desk-reject-worthy evidence the editor can cite. See `.claude/rules/cross-artifact-review.md`.
-
-Reports: `quality_reports/cross_artifact_[paper]/reproducibility.md`.
-
-**Novelty-probe Post-Flight (new in v1.7.0).** The editor's novelty probe uses `WebSearch` to check whether the paper's contribution has been made before. WebSearch results can be hallucinated — fabricated prior work, misattributed findings, wrong years. Before the editor's desk review incorporates novelty-probe claims into its decision, those claims must pass Post-Flight Verification per [`.claude/rules/post-flight-verification.md`](../../rules/post-flight-verification.md):
+**Novelty-probe verification.** The editor's novelty probe uses `WebSearch` to check whether the paper's contribution has been made before. WebSearch results can be hallucinated — fabricated prior work, misattributed findings, wrong years. Before the editor's desk review incorporates novelty-probe claims into its decision, those claims must pass Chain-of-Verification (see [`/verify-claims`](../verify-claims/SKILL.md)):
 
 1. The editor collects novelty-probe claims (e.g., "Smith 2022 already showed this exact result").
 2. Spawn `claim-verifier` via `Task` with `subagent_type=claim-verifier` and `context=fork`, passing the claims + verification questions + candidate source URLs. Forked fresh context is the CoVe independence trick.
@@ -330,12 +315,10 @@ Opt-out: `--no-novelty-check` already skips the probe entirely. If the probe run
 **Manuscript:** [path] — [page count, last modified]
 **Target journal:** [JOURNAL_SHORT] → [full name from `.claude/references/journal-profiles.md`]
 **Journal profile loaded:** [yes/no; resolved from `.claude/references/journal-profiles.md`; key adjustments: e.g., "Identification 35 → 40"]
-**Cross-artifact scripts found:** [list referenced .R / .py / .do files]
-**Reproducibility status:** [PASS / FAIL from Phase 0] — [N of M claims within tolerance]
 **Round:** [fresh / r2 / r3 / stress]
 ```
 
-If the manuscript path doesn't exist, the target journal isn't in `.claude/references/journal-profiles.md`, or a cross-artifact script is missing, stop and surface the issue before proceeding.
+If the manuscript path doesn't exist or the target journal isn't in `.claude/references/journal-profiles.md`, stop and surface the issue before proceeding.
 
 ### Phase 1: Editor desk review
 
@@ -384,16 +367,13 @@ quality_reports/
     referee_methods.md                   # Phase 2 (parallel)
     editorial_decision.md                # Phase 3
     (R&R rounds: desk_review_r2.md, referee_domain_r2.md, ...)
-  cross_artifact_[sanitized_paper_name]/
-    reproducibility.md                   # Phase 0
-    review_r_*.md                        # Phase 0 (one per referenced script)
 ```
 
 ---
 
 ## Field adaptation
 
-The shipped `journal-profiles.md` covers 5 econ journals (AER, QJE, JPE, ECMA, ReStud). For other fields (finance, political science, biology, CS, etc.), copy `templates/journal-profile-template.md` into a new section of `journal-profiles.md` and fill in the schema. See the "Field adaptation" section at the end of `journal-profiles.md` for detailed guidance. The pipeline itself is field-agnostic; only the calibration data changes.
+The shipped `journal-profiles.md` covers 5 econ journals (AER, QJE, JPE, ECMA, ReStud). For other fields (finance, political science, biology, CS, etc.), copy `.claude/references/journal-profile-template.md` into a new section of `journal-profiles.md` and fill in the schema. See the "Field adaptation" section at the end of `journal-profiles.md` for detailed guidance. The pipeline itself is field-agnostic; only the calibration data changes.
 
 For non-econ paper types in `methods-referee.md`, extend the paper-type list (e.g., biology: `observational / experimental / computational / review`).
 
