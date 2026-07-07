@@ -4,8 +4,8 @@
 
 ## Prerequisites
 
-- Read `~/.claude/preferences/model-solving-conventions.md` for the `full_model.tex` skeleton.
-- Read `~/.claude/preferences/latex-research.md` for formatting conventions.
+- Read `references/model-solving-conventions.md` for the `full_model.tex` skeleton.
+- Read `references/latex-research.md` for formatting conventions.
 
 ## Inputs
 
@@ -25,7 +25,7 @@ Use the skeleton from `model-solving-conventions.md`:
 \usepackage{amsmath,amssymb,amsthm,booktabs,graphicx,hyperref}
 
 \title{Model: [Model Name] \\ \large Derivation and Verification Document}
-\author{[User Name] \\ \small Generated with Claude Code + Oracle verification}
+\author{[User Name] \\ \small Generated with Claude Code + independent verifier subagent}
 \date{\today}
 
 \begin{document}
@@ -48,8 +48,8 @@ Use the skeleton from `model-solving-conventions.md`:
 \section{Parameter Values Used in Numerical Checks}
 [Table of all parameter values used in spot-checks, with sources]
 
-\section{Oracle Session Transcripts}
-[Summary of each Oracle call: slug, what was sent, verdict summary]
+\section{Verifier Session Summaries}
+[Summary of each verifier dispatch: what was sent, verdict summary]
 
 \end{document}
 ```
@@ -58,11 +58,11 @@ Fill in:
 - `[Model Name]` from `$MODEL_NAME`
 - `[User Name]` — use the user's name if known, otherwise "Author"
 - **Parameter appendix:** Collect all parameter values used in Phase 3 numerical checks. Present as a table with Parameter | Value | Source columns.
-- **Oracle appendix:** For each Oracle call, summarize: (1) the slug/session ID, (2) what was sent (setup review / N claims for re-derivation / N sign claims), (3) overall verdict (all agreed / N disagreements resolved).
+- **Verifier appendix:** For each verifier dispatch, summarize: (1) the phase and mode (setup review / re-derivation / sign verification), (2) what was sent (setup review / N claims for re-derivation / N sign claims), (3) overall verdict (all agreed / N disagreements resolved).
 
 ## Step 2: Apply formatting conventions
 
-Read `~/.claude/preferences/latex-research.md` and apply:
+Read `references/latex-research.md` and apply:
 
 - **Wide tables:** Wrap in `\resizebox{1\linewidth}{!}{}` (only when needed — comparative statics table with many columns, or parameter table with long source strings)
 - **Table style:** `booktabs` throughout (`\toprule`, `\midrule`, `\bottomrule`)

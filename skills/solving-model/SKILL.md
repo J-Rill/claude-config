@@ -18,18 +18,18 @@ Orchestrate economic model derivation and verification through five checkpointed
 
 ```
 SKILL.md (this file) — argument parsing, phase routing, checkpoint enforcement
-  ├── references/phase-1-setup.md         — Model setup elicitation + Oracle review
+  ├── references/phase-1-setup.md         — Model setup elicitation + verifier review
   ├── references/phase-2-derivation.md    — Step-by-step derivation
-  ├── references/phase-3-verification.md  — Local checks + Oracle re-derivation
-  ├── references/phase-4-comp-statics.md  — Comparative statics + Oracle sign verification
+  ├── references/phase-3-verification.md  — Local checks + verifier re-derivation
+  ├── references/phase-4-comp-statics.md  — Comparative statics + verifier sign verification
   ├── references/phase-5-documentation.md — Assembly + compilation
-  ├── references/oracle-prompts.md        — Oracle prompt templates
+  ├── references/verifier-prompts.md      — Verifier subagent prompt templates
   └── references/example-walkthrough.md   — Concrete output pattern (collateral model)
 
-Shared preferences (read by sub-agents as needed):
-  ├── preferences/model-solving-conventions.md  — LaTeX templates
-  ├── preferences/verification-protocol.md      — Check procedures + parameter tables
-  └── preferences/latex-research.md             — General LaTeX conventions
+Shared conventions (read by sub-agents as needed):
+  ├── references/model-solving-conventions.md  — LaTeX templates
+  ├── references/verification-protocol.md      — Check procedures + parameter tables
+  └── references/latex-research.md             — General LaTeX conventions
 ```
 
 ## Phase 0: Argument Parsing
@@ -86,7 +86,7 @@ Execute phases sequentially. Each phase is dispatched as a **sub-agent** that re
 
 Read and follow `references/phase-1-setup.md`.
 
-**Summary:** Elicit model primitives → write `model_setup.tex` → Oracle review → checkpoint.
+**Summary:** Elicit model primitives → write `model_setup.tex` → verifier review → checkpoint.
 
 **Skip if:** `--from` >= 2 (read existing `model_setup.tex` instead).
 
@@ -108,12 +108,12 @@ Read and follow `references/phase-2-derivation.md`.
 
 Read and follow `references/phase-3-verification.md`.
 
-**Summary:** Collect flagged steps → user selects Oracle steps → run 3 local checks on all flagged → Oracle blind re-derivation on selected → HALT on any failure → checkpoint.
+**Summary:** Collect flagged steps → user selects verifier steps → run 3 local checks on all flagged → verifier blind re-derivation on selected → HALT on any failure → checkpoint.
 
 **"Verify existing" entry:** If `--verify` with an external file, or `--from=3` when `derivation.tex` lacks `\paragraph{Step` labels, Phase 3 begins with step parsing (see the phase file for full parsing specification). Normal `--from=3` resumes (where `derivation.tex` was produced by Phase 2) skip parsing and go straight to verification.
 
 **Critical rules:**
-- Oracle receives `model_setup.tex` only — NEVER `derivation.tex`
+- The verifier receives `model_setup.tex` only — NEVER `derivation.tex`
 - Numerical checks execute via Python, not in-context arithmetic
 - Any check failure triggers HALT with side-by-side presentation
 
@@ -123,9 +123,9 @@ Read and follow `references/phase-3-verification.md`.
 
 Read and follow `references/phase-4-comp-statics.md`.
 
-**Summary:** User selects parameters → derive and sign → Oracle batched verification → summary table → checkpoint.
+**Summary:** User selects parameters → derive and sign → verifier batched verification → summary table → checkpoint.
 
-**Oracle budget:** Max 5 sign claims per Oracle call. Split automatically if more.
+**Verifier budget:** Max 5 sign claims per verifier dispatch. Split automatically if more.
 
 ---
 
@@ -143,18 +143,18 @@ Read and follow `references/phase-5-documentation.md`.
 
 | Error | Response |
 |-------|----------|
-| Oracle timeout/failure | Present error, offer retry or skip. Record "Oracle: SKIPPED (timeout)" in verification log. Show degraded-verification warning at checkpoint. |
+| Verifier subagent error/no return | Present error, offer retry or skip. Record "Verifier: SKIPPED (error)" in verification log. Show degraded-verification warning at checkpoint. |
 | LaTeX compilation failure | Show error log. Try common fixes (missing packages, undefined refs). If stuck, present to user. |
 | Missing prior phase files | Explain what's missing, suggest correct `--from=N`. |
 | Phase 2 discovers setup gap | Re-execute Phase 1 to amend `model_setup.tex` (backup previous version), then restart Phase 2. Preserve partial `derivation.tex` as `derivation.tex.partial`. |
 | Phase file overwrite | Always copy existing `.tex` to `.bak` before overwriting. |
 
-## Oracle Budget
+## Verifier Budget
 
-Budget 3-6 Oracle sessions total per model run:
-1. Setup review (Phase 1) — 1 call
-2. Blind re-derivation (Phase 3) — 1-2 calls (max 5 claims each)
-3. Sign verification (Phase 4) — 1-3 calls (max 5 claims each)
+Budget 3-6 verifier subagent dispatches total per model run:
+1. Setup review (Phase 1) — 1 dispatch
+2. Blind re-derivation (Phase 3) — 1-2 dispatches (max 5 claims each)
+3. Sign verification (Phase 4) — 1-3 dispatches (max 5 claims each)
 
 ## First-Time Usage
 

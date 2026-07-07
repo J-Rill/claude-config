@@ -176,11 +176,11 @@ print(f'kstar={kstar:.6f} FOC_residual={foc:.2e}')
       \end{verbatim}
       Output: \texttt{kstar=3.420578 FOC\_residual=0.00e+00}. PASS.
     \end{itemize}
-  \item \textbf{Oracle re-derivation}: AGREE --- Oracle independently derived the same FOC from the Lagrangian. No implicit assumptions beyond A1--A4.
+  \item \textbf{Verifier}: AGREE --- The verifier subagent independently derived the same FOC from the Lagrangian. No implicit assumptions beyond A1--A4.
 \end{itemize}
 ```
 
-### Verification for Step 4 (not selected for Oracle):
+### Verification for Step 4 (not selected for the verifier):
 
 ```latex
 \paragraph{Verification: Step 4}
@@ -188,7 +188,7 @@ print(f'kstar={kstar:.6f} FOC_residual={foc:.2e}')
   \item \textbf{Dimensional check}: PASS --- All terms dimensionless (same units as Step 2).
   \item \textbf{Limiting cases}: PASS --- As $\mu \to 0$: reduces to $\alpha A k^{\alpha-1} = r + \delta$ (first-best). As $\theta \to 1$: wedge $\mu(1-\theta) \to 0$, constraint becomes non-distortionary. Both match intuition.
   \item \textbf{Numerical spot-check}: PASS --- At $k=3.42, \mu=0$: LHS $= 0.33 \times 3.42^{-0.67} = 0.140$. RHS $= 0.04 + 0.10 + 0 = 0.140$. Diff $= 0.00\text{e+00}$.
-  \item \textbf{Oracle re-derivation}: NOT SELECTED
+  \item \textbf{Verifier}: NOT SELECTED
 \end{itemize}
 ```
 

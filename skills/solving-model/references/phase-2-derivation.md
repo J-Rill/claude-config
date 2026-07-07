@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- Read `~/.claude/preferences/model-solving-conventions.md` before writing any LaTeX.
+- Read `references/model-solving-conventions.md` before writing any LaTeX.
 - Read `$WORKING_DIR/model_setup.tex` to understand the model.
 
 ## Inputs

@@ -4,8 +4,8 @@
 
 ## Prerequisites
 
-- Read `~/.claude/preferences/verification-protocol.md` before running any checks.
-- Read `~/.claude/preferences/model-solving-conventions.md` for verification log format.
+- Read `references/verification-protocol.md` before running any checks.
+- Read `references/model-solving-conventions.md` for verification log format.
 
 ## Inputs
 
@@ -20,7 +20,7 @@ If entering at Phase 3 via normal `--from=3` (where `derivation.tex` was produce
 
 If entering at Phase 3 with an external file (not produced by Phase 2):
 
-1. **PDF input:** Invoke the `pdf-chunker` skill to extract text.
+1. **PDF input:** Read the PDF directly with the built-in Read tool (for a long PDF, use its `pages` parameter to page through it).
 
 2. **Read the LaTeX or extracted text.**
 
@@ -54,11 +54,11 @@ grep -n "% VERIFY" "$WORKING_DIR/derivation.tex"
 
 Build a verification task list with step number, description, and equation(s).
 
-## Step 2: User selects Oracle steps
+## Step 2: User selects verifier steps
 
 Present the flagged step list to the user. Ask using AskUserQuestion:
 
-> "Which flagged steps should Oracle re-derive independently? Select 3-5 critical steps. Flagged steps: [list with numbers and descriptions]"
+> "Which flagged steps should the verifier subagent re-derive independently? Select 3-5 critical steps. Flagged steps: [list with numbers and descriptions]"
 
 ## Step 3: Run local checks on ALL flagged steps
 
@@ -75,7 +75,7 @@ Do NOT read the entire `derivation.tex` for each check. Instead, load:
 ### Checks A, B, C
 
 Follow the full procedures in `verification-protocol.md`:
-- **Check A — Dimensional consistency:** Assign units from `model_setup.tex`, verify units(LHS) = units(RHS).
+- **Check A — Dimensional analysis:** Assign units from `model_setup.tex`, verify units(LHS) = units(RHS).
 - **Check B — Limiting cases:** Evaluate at boundary parameter values, verify against economic intuition.
 - **Check C — Numerical spot-check:** Use parameter tables from `verification-protocol.md`. **Execute via Python** (`python3 -c "..."`), never in-context arithmetic. For FOCs, solve for consistent endogenous values first.
 
@@ -85,9 +85,9 @@ Use the output formats specified in `verification-protocol.md` for each check.
 
 Follow the **HALT Protocol** in `verification-protocol.md`. In brief: stop immediately, present the original derivation and failing check side-by-side, wait for user adjudication. If the user identifies an error, back up `derivation.tex` to `.bak`, correct it, and re-run all three checks on the corrected step before continuing.
 
-## Step 4: Oracle re-derivation for selected steps
+## Step 4: Verifier re-derivation for selected steps
 
-Read the **Blind Re-derivation** template from `references/oracle-prompts.md`.
+Read the **Blind Re-derivation** template from `references/verifier-prompts.md`.
 
 1. Construct the claims list from the user-selected steps. Format each claim as:
    ```
@@ -95,25 +95,19 @@ Read the **Blind Re-derivation** template from `references/oracle-prompts.md`.
      [equation from the derivation step]
    ```
 
-2. **Max 5 claims per Oracle call.** If the user selected more, split into multiple calls.
+2. **Max 5 claims per verifier dispatch.** If the user selected more, split into multiple dispatches.
 
-3. Run Oracle:
-   ```bash
-   npx -y @steipete/oracle --engine browser --model gpt-5.4-pro \
-     --slug "$MODEL_NAME-rederivation" \
-     -p "[constructed prompt]" \
-     --file "$WORKING_DIR/model_setup.tex"
-   ```
+3. Dispatch the verifier subagent (see the template's **Dispatch** block) — spawn `model-verifier` via the Task tool with `context: fork`, in Mode B, passing the constructed prompt and the path to `model_setup.tex`.
 
-4. **CRITICAL: Do NOT include `derivation.tex` in the Oracle call.** The entire point is blind re-derivation. Oracle receives only `model_setup.tex`.
+4. **CRITICAL: Do NOT pass `derivation.tex` to the verifier.** The entire point is blind re-derivation. The verifier receives only `model_setup.tex`.
 
-5. If Oracle returns **DISAGREE** on any claim: follow the HALT protocol above, presenting the Oracle's derivation alongside the original.
+5. If the verifier returns **DISAGREE** on any claim: follow the HALT protocol above, presenting the verifier's derivation alongside the original.
 
-6. If Oracle returns **AGREE with implicit assumptions**: note these in the verification log. Ask the user whether the implicit assumptions are acceptable.
+6. If the verifier returns **AGREE with implicit assumptions**: note these in the verification log. Ask the user whether the implicit assumptions are acceptable.
 
 ## Step 5: Write `verification_log.tex`
 
-Use the **Verification Log Format** template from `model-solving-conventions.md`. Always show all 4 rows (Dimensional, Limiting cases, Numerical, Oracle). Steps not sent to Oracle use "NOT SELECTED."
+Use the **Verification Log Format** template from `model-solving-conventions.md`. Always show all 4 rows (Dimensional, Limiting cases, Numerical, Verifier). Steps not sent to the verifier subagent use "NOT SELECTED."
 
 Back up before overwriting:
 ```bash
@@ -122,11 +116,11 @@ cp "$WORKING_DIR/verification_log.tex" "$WORKING_DIR/verification_log.tex.bak" 2
 
 ## Step 6: CHECKPOINT
 
-Display a verification summary table: Step | Dimensional | Limiting | Numerical | Oracle | Overall.
+Display a verification summary table: Step | Dimensional | Limiting | Numerical | Verifier | Overall.
 
-**If any Oracle check was skipped** (timeout, error, or user chose to skip):
+**If any verifier re-derivation was skipped** (error, no return, or user chose to skip):
 
-> "WARNING: Oracle verification incomplete — N critical steps unverified by independent model. Re-run with `/solving-model --from=3 --name=$MODEL_NAME` when Oracle is available."
+> "WARNING: Verifier re-derivation incomplete — N critical steps unverified by the independent subagent. Re-run with `/solving-model --from=3 --name=$MODEL_NAME` to dispatch the verifier."
 
 Ask using AskUserQuestion:
 

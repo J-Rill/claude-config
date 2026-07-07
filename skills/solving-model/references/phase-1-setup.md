@@ -4,12 +4,12 @@
 
 ## Prerequisites
 
-- Read `~/.claude/preferences/model-solving-conventions.md` before writing any LaTeX.
+- Read `references/model-solving-conventions.md` before writing any LaTeX.
 - On first invocation, also read `references/example-walkthrough.md` for a concrete output pattern.
 
 ## Inputs
 
-- `$MODEL_NAME` — the model name (used for working directory and Oracle slugs)
+- `$MODEL_NAME` — the model name (used for the working directory)
 - `$WORKING_DIR` — path to `solving_models/[name]/`
 - `$INPUT_TYPE` — one of: `verbal`, `pdf`, `latex`
 - `$INPUT_CONTENT` — the user's description, file path, or LaTeX content
@@ -17,7 +17,7 @@
 ## Step 1: Parse input
 
 - If `$INPUT_TYPE` is `verbal`: proceed directly to elicitation
-- If `$INPUT_TYPE` is `pdf`: invoke the `pdf-chunker` skill to extract text, then read the extracted output and identify the model section.
+- If `$INPUT_TYPE` is `pdf`: read the PDF directly with the built-in Read tool (for a long PDF, use its `pages` parameter to page through it), then identify the model section.
 - If `$INPUT_TYPE` is `latex`: read the file and identify what's already formalized vs. what's missing
 
 ## Step 2: Structured elicitation
@@ -55,23 +55,17 @@ Every variable that appears in any equation must appear in the notation table. E
 cp "$WORKING_DIR/model_setup.tex" "$WORKING_DIR/model_setup.tex.bak" 2>/dev/null
 ```
 
-## Step 4: Oracle setup review
+## Step 4: Verifier setup review
 
-Read the **Setup Review** template from `references/oracle-prompts.md`.
+Read the **Setup Review** template from `references/verifier-prompts.md`.
 
 1. Construct the prompt by inserting the contents of `model_setup.tex` into the `[MODEL_SETUP_CONTENTS]` placeholder.
-2. Run Oracle:
-   ```bash
-   npx -y @steipete/oracle --engine browser --model gpt-5.4-pro \
-     --slug "$MODEL_NAME-setup-review" \
-     -p "[constructed prompt]" \
-     --file "$WORKING_DIR/model_setup.tex"
-   ```
-3. Present Oracle feedback to the user, organized by severity (CRITICAL → WARNING → SUGGESTION).
+2. Dispatch the verifier subagent (see the template's **Dispatch** block) — spawn `model-verifier` via the Task tool with `context: fork`, in Mode A, passing the constructed prompt and the path to `model_setup.tex`.
+3. Present the verifier's feedback to the user, organized by severity (CRITICAL → WARNING → SUGGESTION).
 4. For each CRITICAL or WARNING issue, ask the user to decide: fix it, defer it, or dismiss it.
 5. Apply agreed-upon fixes to `model_setup.tex`.
 
-If Oracle times out or fails: inform the user, offer to retry or continue without Oracle review. Note that setup review is valuable but not blocking — the user can proceed and rely on Phase 3 verification.
+If the verifier subagent errors or returns nothing: inform the user, offer to retry or continue without verifier review. Note that setup review is valuable but not blocking — the user can proceed and rely on Phase 3 verification.
 
 ## Step 5: CHECKPOINT
 

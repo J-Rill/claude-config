@@ -4,8 +4,8 @@
 
 ## Prerequisites
 
-- Read `~/.claude/preferences/model-solving-conventions.md` for table format.
-- Read `~/.claude/preferences/verification-protocol.md` for numerical checks.
+- Read `references/model-solving-conventions.md` for table format.
+- Read `references/verification-protocol.md` for numerical checks.
 
 ## Inputs
 
@@ -66,34 +66,28 @@ Back up before overwriting:
 cp "$WORKING_DIR/comparative_statics.tex" "$WORKING_DIR/comparative_statics.tex.bak" 2>/dev/null
 ```
 
-## Step 4: Oracle sign verification
+## Step 4: Verifier sign verification
 
-Read the **Comparative Statics Verification** template from `references/oracle-prompts.md`.
+Read the **Comparative Statics Verification** template from `references/verifier-prompts.md`.
 
-1. **Construct the equilibrium equations context.** Read `derivation.tex` and extract the final equilibrium conditions (typically the last few steps or any step labeled "equilibrium characterization"). Format them as a numbered list of equations with their step references. This becomes the `[KEY_EQUILIBRIUM_EQUATIONS]` placeholder in the Oracle template.
+1. **Construct the equilibrium equations context.** Read `derivation.tex` and extract the final equilibrium conditions (typically the last few steps or any step labeled "equilibrium characterization"). Format them as a numbered list of equations with their step references. This becomes the `[KEY_EQUILIBRIUM_EQUATIONS]` placeholder in the verifier template — it is pasted into the prompt so the verifier does not need `derivation.tex`.
 
 2. Collect all sign claims into a numbered list. Format each as:
    ```
    Claim N: d(variable)/d(parameter) [sign] 0 [condition], because [brief derivation summary].
    ```
 
-3. **Max 5 claims per Oracle call.** If more than 5 sign claims, split into multiple Oracle calls. Example: 18 claims → 4 calls of 5, 5, 5, 3.
+3. **Max 5 claims per verifier dispatch.** If more than 5 sign claims, split into multiple dispatches. Example: 18 claims → 4 dispatches of 5, 5, 5, 3.
 
-4. Run Oracle:
-   ```bash
-   npx -y @steipete/oracle --engine browser --model gpt-5.4-pro \
-     --slug "$MODEL_NAME-comp-statics" \
-     -p "[constructed prompt]" \
-     --file "$WORKING_DIR/model_setup.tex"
-   ```
+4. Dispatch the verifier subagent (see the template's **Dispatch** block) — spawn `model-verifier` via the Task tool with `context: fork`, in Mode C, passing the constructed prompt (with the equilibrium equations pasted in) and the path to `model_setup.tex`.
 
-5. For each claim where Oracle returns **DISAGREE**: follow the HALT protocol from `verification-protocol.md`. Present both sign derivations side-by-side.
+5. For each claim where the verifier returns **DISAGREE**: follow the HALT protocol from `verification-protocol.md`. Present both sign derivations side-by-side.
 
-6. For each claim where Oracle returns **AMBIGUOUS**: present Oracle's analysis. The sign may genuinely depend on parameter values — ask the user whether to:
+6. For each claim where the verifier returns **AMBIGUOUS**: present the verifier's analysis. The sign may genuinely depend on parameter values — ask the user whether to:
    - Add a sufficient condition (parameter restriction) under which the sign is determinate
    - Report the sign as ambiguous in the summary table
 
-7. If Oracle times out or fails: inform the user, offer retry or skip. Note in the summary table: "Oracle: SKIPPED."
+7. If the verifier subagent errors or returns nothing: inform the user, offer retry or skip. Note in the summary table: "Verifier: SKIPPED."
 
 ## Step 5: Build summary table
 
