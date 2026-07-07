@@ -2,14 +2,6 @@
 
 I'm an economist doing empirical research. Prioritize correctness and readability over abstraction.
 
-## Script structure and abstractions
-
-- Prefer straight-line, top-to-bottom scripts; organize long ones with numbered section headers (`# ---- 1. Load data ----`), not functions.
-- Don't extract a helper unless the logic is reused 3+ times or a block exceeds ~30 lines; inline short operations.
-- Numbered top-level scripts (`1-build.do`, `2-clean.py`, `3-analyze.py`) are good — don't restructure them into modules or packages.
-- Default to functions over classes, but use classes where they fit (Pydantic / structured-output schemas for LLM responses, dataclasses for grouped state).
-- Don't introduce design patterns (factories, decorators, dependency injection, registries) unless I ask.
-
 ## Naming and comments
 
 - Descriptive variable names (`prices_2020`, not `p`) so the code reads like the analysis.
@@ -33,18 +25,6 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 - After any cleaning, transformation, or merge, report: what you loaded (row/col counts, key columns); what you filtered/joined/computed and why; how many rows survived each step and what dropped; and any assumptions (join key, duplicate handling, NA treatment). Flag silent drops or NA-fills rather than letting me find them later.
 - For regression or analysis output, state the headline result in a sentence or two before the table.
 - For code review, point me to the key lines implementing the substantive decision, not every changed line.
-
-## Regression / table output format
-
-- For tables I'll drop into LaTeX, export **rows only** — no column headers, rules, or panel titles. I add those in the `.tex` wrapper via `\ExpandableInput{...}` inside a `tabular*` environment.
-- Each row: row label, then `&`-separated cells, ending in `\\`. Example:
-  ```
-  Time FE             &         1.8&           3\\
-  Individual FE       &        47.2&        52.3\\
-  Time + Individual FE&        47.8&          54\\
-  Unique Respondents  &       15443&       15458\\
-  ```
-- Write to a plain `.tex` fragment (e.g. `tables/<name>.tex`) — just the rows. Keep numeric formatting consistent within a table (don't mix `0.472` and `47.2%` in one column). Standard errors in parentheses on the row below the coefficient, same format.
 
 ## Code review after changes
 
