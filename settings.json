@@ -1,5 +1,5 @@
 {
-  "model": "opus",
+  "model": "opus[1m]",
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
@@ -19,5 +19,5 @@
     }
   },
   "effortLevel": "xhigh",
-  "skipAutoPermissionPrompt": true
+  "tui": "fullscreen"
 }
