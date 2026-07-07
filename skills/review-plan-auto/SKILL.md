@@ -2,7 +2,7 @@
 name: review-plan-auto
 description: Automated iterative plan review with convergence detection. Runs the review-plan critique loop automatically until the plan has no critical issues, with safeguards against deterioration and circular changes. Surfaces upstream issues that plan revision cannot fix. Use instead of manually running /review-plan multiple times. Trigger when the user mentions iterative review, auto-review, reviewing a plan thoroughly, or wants multiple review passes without manual approval.
 argument-hint: "[file:path] [role:\"...\"] [focus:dimension] [depth:quick|standard|deep] [max:N] [dryrun] [help]"
-allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Agent", "WebSearch", "WebFetch"]
+allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Task", "WebSearch", "WebFetch"]
 ---
 # Automated Plan Review
 
@@ -50,7 +50,7 @@ Identical to **Steps 1–3 of `/review-plan`** (`@~/.claude/skills/review-plan/S
 
 #### 4a. Launch fresh-context critique
 
-Use the Agent tool with `subagent_type="general-purpose"` and a prompt containing:
+Use the Task tool with `subagent_type="general-purpose"` and a prompt containing:
 
 1. The full `current_plan` text
 2. The 3-5 best practices from Step 3

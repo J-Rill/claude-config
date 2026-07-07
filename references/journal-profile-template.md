@@ -67,7 +67,7 @@ The `methods-referee` agent branches on paper type. The default types (econ-cent
 For non-econ fields, add your own types to `.claude/agents/methods-referee.md` by duplicating the rubric block and editing the dimension weights. Examples:
 
 - **Biology:** `observational / experimental / computational / review`.
-- **Political science:** `case-study / comparative / formal-model / survey`.
+- **Political science:** `case-study / comparative / formal-theory / survey-experiment` (already built into `methods-referee.md`).
 - **Psychology:** `experimental / correlational / meta-analysis / pre-registered-replication`.
 
 ## Cross-references

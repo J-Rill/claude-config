@@ -2,7 +2,7 @@
 name: review-plan
 description: Stress-test a plan with structured expert critique, best-practice research, and optional fresh-context subagent review. Use after developing a plan or on any plan file to catch blind spots and missing steps.
 argument-hint: "[file:path] [role:\"...\"] [focus:dimension] [depth:quick|standard|deep] [dryrun] [help]"
-allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Agent", "WebSearch", "WebFetch"]
+allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Task", "WebSearch", "WebFetch"]
 ---
 # Plan Review
 
@@ -76,7 +76,7 @@ Distill into 3-5 key principles relevant to this plan.
 **Fresh-context review (preferred):**
 Launch a subagent to perform the critique. This avoids the bias of reviewing your own plan.
 
-Use the Agent tool with `subagent_type="general-purpose"` and a prompt containing:
+Use the Task tool with `subagent_type="general-purpose"` and a prompt containing:
 - The full plan text
 - The 6 review dimensions listed below
 - The best practices distilled from Step 3

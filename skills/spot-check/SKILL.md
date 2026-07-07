@@ -47,7 +47,7 @@ If no path is given, ask the user which file to spot-check before doing anything
 
 ### Phase 3 — Fan out subagents IN PARALLEL
 
-7. **Spawn N `general-purpose` subagents in a single assistant message** (multiple Agent tool calls in parallel). Each subagent receives:
+7. **Spawn N `general-purpose` subagents in a single assistant message** (multiple Task tool calls in parallel). Each subagent receives:
    - The single sampled row (NOT the others — fresh-context independence is the whole point).
    - A clear description of what the row represents, which columns are inputs, which are outputs.
    - The verification mandate verbatim (the user's free-text + the PASS/FAIL/QUESTIONABLE schema).

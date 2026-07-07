@@ -2,7 +2,7 @@
 name: prompt
 description: Format an informal, conversational request into a structured prompt, then execute it. Use when user invokes /prompt with a task description.
 argument-hint: "[informal request text] [depth:light|standard|deep]"
-allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Agent"]
+allowed-tools: ["Read", "Glob", "Grep", "Write", "Edit", "Bash", "Task"]
 ---
 # /prompt — Format and Execute
 
