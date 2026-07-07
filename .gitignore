@@ -1,9 +1,24 @@
-# macOS
-.DS_Store
+# ~/.claude is tracked in place as the claude-config mirror.
+# Allowlist model: ignore everything at the root, then re-include only the
+# curated config. This keeps runtime state (history, sessions, caches, plans,
+# projects, backups, plugins, shell-snapshots, …) out of the repo while
+# tracking the pieces that are meant to be shared and versioned.
 
-# Python caches (in case a skill ships scripts)
+# 1. Ignore everything at the repo root by default.
+/*
+
+# 2. Re-include the curated config directories and top-level files.
+!/.gitignore
+!/CLAUDE.md
+!/README.md
+!/settings.json
+!/agents/
+!/commands/
+!/rules/
+!/skills/
+
+# 3. Within the re-included trees, still drop OS/runtime noise.
+#    (settings.local.json holds machine-specific overrides and is not shared.)
+.DS_Store
 __pycache__/
 *.pyc
-
-# Local, machine-specific overrides — not meant to be shared
-settings.local.json
