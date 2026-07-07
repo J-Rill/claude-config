@@ -1,24 +1,39 @@
 ---
 name: data-analysis
-description: "End-to-end Python data analysis pipeline — exploration → cleaning → regression → publication-ready tables and figures. Use when user says \"analyze this dataset\", \"run a regression on X\", \"explore this CSV\", \"full analysis workflow\", \"get me summary stats and a regression\", or points at a `.csv`/`.parquet`/`.dta` and asks for empirical results. Produces numbered Python scripts in `scripts/python/` and outputs to `scripts/python/_outputs/`."
+description: "Python data exploration + cleaning pipeline — load → explore → clean → analysis-ready dataset, diagnostics, and figures. Use when user says \"analyze this dataset\", \"explore this CSV\", \"clean this data\", \"get me summary stats\", \"prep this for regression\", or points at a `.csv`/`.parquet`/`.dta` and asks for empirical prep. Regression estimation and publication tables are done in Stata (see below). Produces numbered Python scripts in `scripts/python/` and outputs to `scripts/python/_outputs/`."
 ---
 
 # Data Analysis Workflow
 
-Run an end-to-end data analysis in Python: load, explore, analyze, and produce publication-ready output.
+Run the Python half of the standard workflow: load, explore, and clean a dataset,
+produce diagnostics and figures, and write an **analysis-ready dataset** for
+estimation. Per the usual workflow here, **regression estimation and regression
+tables happen in Stata**, not Python — this skill hands off a clean `.dta` (plus a
+parquet copy) and stops there. Quick `statsmodels` OLS is fine for exploratory
+sanity checks, but the reported regressions and their `.tex` tables are produced in
+Stata.
 
-**Input:** `$ARGUMENTS` — a dataset path (e.g., `data/county_panel.csv`) or a description of the analysis goal (e.g., "regress wages on education with state fixed effects using CPS data").
+**Input:** `$ARGUMENTS` — a dataset path (e.g., `data/county_panel.csv`) or a
+description of the prep goal (e.g., "clean the CPS extract and build a
+state-year panel ready to regress wages on education").
 
 ---
 
 ## Constraints
 
-- **Follow Python code conventions** in `.claude/rules/python-code-conventions.md` if present
-- **Save all scripts** to `scripts/python/` with descriptive numbered names (`01_load.py`, `02_clean.py`, ...)
-- **Save all outputs** (figures, tables, pickled objects, parquet) to `output/`
-- **Pickle every key object** (regression results, summary tables, processed DataFrames) — downstream notebooks or slides may need them. For large DataFrames prefer parquet.
-- **Use project theme** for all figures (check for custom matplotlib rcParams in `.claude/rules/`)
-- **Run the `/double-check` skill** on the generated script before presenting results
+- **Follow the code conventions** in `.claude/rules/researcher-code-conventions.md`
+  (straight-line numbered scripts, no premature helpers).
+- **Save all scripts** to `scripts/python/` with descriptive numbered names
+  (`01_load.py`, `02_clean.py`, ...).
+- **Save all outputs** (figures, tables, pickled objects, parquet/dta) to
+  `scripts/python/_outputs/`.
+- **Pickle every key object** (summary tables, processed DataFrames). For large
+  DataFrames prefer parquet; for the analysis-ready dataset also write `.dta` for
+  Stata.
+- **Run the `/double-check` skill** on the generated script before presenting
+  results.
+- **Fail loud.** Prefer `assert`/errors over silent NA propagation when the data
+  is wrong (matches the global preferences).
 
 ---
 
@@ -26,7 +41,9 @@ Run an end-to-end data analysis in Python: load, explore, analyze, and produce p
 
 ### Phase 0: Pre-Flight Report
 
-**Before writing any analysis code, produce a Pre-Flight Report** showing you read the inputs. This prevents the common failure mode where the agent hallucinates variable names or skips project conventions.
+**Before writing any analysis code, produce a Pre-Flight Report** showing you read
+the inputs. This prevents the common failure mode where the agent hallucinates
+variable names or skips project conventions.
 
 Output block (in your response to the user, before Phase 1):
 
@@ -39,16 +56,16 @@ Output block (in your response to the user, before Phase 1):
 - Key dtypes: [e.g., "outcome=float64, treatment=int8, state=category"]
 - Missing-data summary: [% missing per key var via df.isna().mean()]
 
-**Project conventions read:**
-- `.claude/rules/python-code-conventions.md` — [one-line summary of most relevant rule, if file exists]
-- `.claude/rules/content-invariants.md` — [INV-9, INV-10, INV-11, INV-12 applicable, if file exists]
+**Conventions read:**
+- `.claude/rules/researcher-code-conventions.md` — [one-line summary, if relevant]
 
 **Task interpretation:** [one sentence restating what the user asked for]
 
 **Plan:** [3-5 bullet outline of the Python script structure]
 ```
 
-If any input cannot be read (missing file, unreadable format), stop and ask the user before proceeding.
+If any input cannot be read (missing file, unreadable format), stop and ask the
+user before proceeding.
 
 ### Phase 1: Setup and Data Loading
 
@@ -66,43 +83,45 @@ Generate diagnostic outputs:
 - **Time patterns:** If panel data, plot trends over time per group
 - **Group comparisons:** If treatment/control, compare pre-treatment means and balance tables
 
-Save all diagnostic figures to `output/diagnostics/`.
+Save all diagnostic figures to `scripts/python/_outputs/diagnostics/`.
 
-### Phase 3: Main Analysis
+### Phase 3: Cleaning and Analysis-Ready Dataset
 
-Based on the research question:
-- **OLS / GLM:** `statsmodels.formula.api.ols` (formula syntax) or `statsmodels.api.OLS` (array interface)
-- **Fixed effects / panel:** `pyfixest.feols` (Python port of R `fixest`, supports clustering, IV, multiway FEs) — preferred for any spec with `|` fixed effects. `linearmodels.PanelOLS` is the alternative.
-- **Standard errors:** Cluster at the appropriate level (document why).
-  - statsmodels: `.fit(cov_type="cluster", cov_kwds={"groups": df["cluster_var"]})`
-  - pyfixest: `vcov={"CRV1": "cluster_var"}`
-- **Multiple specifications:** Start simple, progressively add controls. Pyfixest's stepwise sugar (`csw(.)` / `sw(.)`) is helpful.
-- **Effect sizes:** Report standardized effects alongside raw coefficients.
+This is the core of the Python half. Build the dataset the Stata estimation will run on:
 
-### Phase 4: Publication-Ready Output
+- **Clean:** fix dtypes, recode, handle missing values explicitly (never silently),
+  construct derived variables, apply sample restrictions with module-level constants.
+- **Walk through every step.** After each clean/merge/filter, print `len(df)` and a
+  quick `df.head()` or value-count so the user can see exactly what survived. Log any
+  rows dropped and why (an attrition table: `step, n_remaining, n_dropped, why`).
+- **Exploratory estimation (optional):** a quick `statsmodels.formula.api.ols` fit is
+  fine to eyeball a relationship — but this is a sanity check, not the reported result.
+  Print `len(df)` before/after any fit so silently-dropped incomplete cases are visible.
+- **Hand off to Stata:** write the analysis-ready dataset with `df.to_stata(...)` (and a
+  parquet copy). The reported regressions + row-only `.tex` tables are produced in a
+  Stata `.do` script following `.claude/rules/regression-table-output.md`.
 
-**Tables:**
-- Use `pyfixest.etable()` for regression tables (preferred when models are pyfixest objects) or `stargazer` (Python package) for statsmodels output
-- Include all standard elements: coefficients, SEs, significance stars, N, R-squared
-- Export as `.tex` for LaTeX inclusion and `.html` for quick viewing
+### Phase 4: Figures
 
-**Figures:**
 - Use `matplotlib` (with `seaborn` for higher-level wrappers when helpful)
-- Pass `transparent=True` to `plt.savefig` for Beamer compatibility
 - Include proper axis labels (sentence case, units)
 - Set figure size explicitly: `fig, ax = plt.subplots(figsize=(X, Y))`
 - Save as both `.pdf` and `.png`:
   ```python
   for ext in ("pdf", "png"):
-      fig.savefig(OUT / f"figure_name.{ext}", bbox_inches="tight", transparent=True, dpi=200)
+      fig.savefig(OUT / f"figure_name.{ext}", bbox_inches="tight", dpi=200)
   ```
+
+Regression *tables* are not produced here — they come out of Stata as row-only
+`.tex` fragments (see `.claude/rules/regression-table-output.md`).
 
 ### Phase 5: Save and Review
 
-1. Pickle (or parquet for DataFrames) every key object: regression results, summary tables, processed data.
-   - `with open(OUT / "model_results.pkl", "wb") as f: pickle.dump(results, f)`
+1. Pickle (or parquet for DataFrames) every key object: summary tables, processed data.
    - `df_clean.to_parquet(OUT / "df_clean.parquet")`
-2. Create `output/` subdirectories as needed: `Path("output/analysis").mkdir(parents=True, exist_ok=True)`.
+   - `df_clean.to_stata(OUT / "analysis.dta")`  # for Stata estimation
+2. Create `scripts/python/_outputs/` subdirectories as needed:
+   `Path("scripts/python/_outputs/diagnostics").mkdir(parents=True, exist_ok=True)`.
 3. Run the `/double-check` skill on the generated script.
 4. Address any Critical or High issues from the review.
 
@@ -119,7 +138,7 @@ Follow this template:
 Author: [from project context]
 Purpose: [What this script does]
 Inputs:  [Data files]
-Outputs: [Figures, tables, pickle/parquet files]
+Outputs: [Figures, tables, parquet/dta files]
 """
 
 # ============================================================
@@ -132,19 +151,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import statsmodels.formula.api as smf
-import pyfixest as pf  # only if using FE / panel specs
-from stargazer.stargazer import Stargazer  # only if using statsmodels tables
+import statsmodels.formula.api as smf  # only for exploratory OLS sanity checks
 
 np.random.seed(20260415)  # YYYYMMDD
 
-OUT = Path("output/analysis")
+OUT = Path("scripts/python/_outputs")
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ============================================================
 # 1. Data Loading
 # ============================================================
-# [Load and clean data]
+# [Load data]
 
 # ============================================================
 # 2. Exploratory Analysis
@@ -152,38 +169,38 @@ OUT.mkdir(parents=True, exist_ok=True)
 # [Summary stats, diagnostic plots]
 
 # ============================================================
-# 3. Main Analysis
+# 3. Cleaning + analysis-ready dataset
 # ============================================================
-# [Regressions, estimation]
+# [Clean, restrict, derive; log attrition; write .dta for Stata]
 
 # ============================================================
-# 4. Tables and Figures
+# 4. Figures
 # ============================================================
-# [Publication-ready output]
+# [matplotlib figures]
 
 # ============================================================
 # 5. Export
 # ============================================================
-# [pickle/parquet objects, savefig figures]
+# [parquet/dta objects, savefig figures]
 ```
 
 ---
 
 ## Important
 
-- **Reproduce, don't guess.** If the user specifies a regression, run exactly that.
-- **Show your work.** Print summary statistics before jumping to regression — `print(df.describe())`, sample sizes, balance tables.
-- **Check for issues.** Look for multicollinearity, outliers, perfect prediction, and especially **silently dropped NAs** (pyfixest and statsmodels both drop incomplete cases by default — log how many).
+- **Reproduce, don't guess.** If the user specifies a variable or sample restriction, apply exactly that.
+- **Show your work.** Print summary statistics before building anything — `print(df.describe())`, sample sizes, balance tables.
+- **Check for issues.** Look for multicollinearity, outliers, and especially **silently dropped NAs** (`statsmodels` drops incomplete cases by default — log how many).
 - **Use relative paths.** All paths relative to repository root (use `pathlib.Path`).
 - **No hardcoded values inside the body.** Use module-level constants for sample restrictions, date ranges, cluster vars, etc.
 - **Walk through every data step.** After each clean/merge/filter, print `len(df)` and a quick `df.head()` or value-count, so the user can see exactly what survived.
 
-## Long-running fits: use the Monitor tool
+## Long-running steps: use the Monitor tool
 
-For regressions, simulations, or bootstrap loops that take more than a couple of minutes, launch via Bash with `run_in_background: true` and then use Anthropic's **Monitor tool** to stream Python stdout into the conversation in real time. Pattern:
+For heavy cleans, merges, or simulations that take more than a couple of minutes, launch via Bash with `run_in_background: true` and then use Anthropic's **Monitor tool** to stream Python stdout into the conversation in real time. Pattern:
 
-1. Background-launch: `python scripts/python/03_analyze.py` with `run_in_background: true`. Capture the `bash_id`.
-2. Use Monitor on the `bash_id` until a milestone fires (e.g., `Coefficients table written`, or process exit).
+1. Background-launch: `python scripts/python/02_clean.py` with `run_in_background: true`. Capture the `bash_id`.
+2. Use Monitor on the `bash_id` until a milestone fires (e.g., `Analysis dataset written`, or process exit).
 3. Continue or course-correct based on what the stream reveals.
 
 This avoids the polling-loop anti-pattern (`sleep 30; check; sleep 30; check`) and avoids burning cache on idle waits.
