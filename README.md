@@ -119,6 +119,15 @@ Prefer symlinks (so updates in the clone propagate automatically)? Replace the `
 
 `settings.local.json` is intentionally git-ignored: it holds machine-specific overrides that should not be shared.
 
+## Privacy
+
+**Never commit or push personal or sensitive information.** This repository is intended to become a public good, so treat every commit as public from day one. Beyond the git-ignored `settings.local.json`, that means:
+
+- No API keys, tokens, or credentials of any kind.
+- No conversation transcripts or runtime state (`history.jsonl`, `projects/`, `sessions/`, `backups/`, caches) — the allowlist `.gitignore` excludes these; keep it that way.
+- No personal identifiers in tracked files: email addresses, machine usernames or absolute home paths, or unpublished research content in skill examples.
+- Review `git diff --cached` before every push; when in doubt, leave it out.
+
 ## License
 
 Personal configuration shared as-is, with no warranty. Reuse anything you find useful.
