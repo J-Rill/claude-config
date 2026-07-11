@@ -51,6 +51,7 @@ Grouped by stage of the research process.
 |---|---|
 | `compile-latex` | Compiles LaTeX via the `xelatex → bibtex → xelatex → xelatex` pipeline. |
 | `overleaf` | Syncs a local clone of an Overleaf project over Git (pull/push). |
+| `prose-revision` | Restructures unpolished draft prose for logical flow — ordering, emphasis, sentence boundaries, transitions, paragraph shape — then smooths the language. Idea flow first, wording second; logically precedes proofreading. |
 | `proofread` | Read-only proofreading pass over paper manuscripts (`.tex`, `.md`) — grammar, typos, overflow, terminology, academic style. |
 
 ### Review and verification
