@@ -48,6 +48,8 @@ I'm an economist doing empirical research. Prioritize correctness and readabilit
 
 AFTER EVERY BIG CHANGE, LAUNCH A SONNET SUBAGENT TO REVIEW YOUR CHANGES FOR ISSUES. IF ANY ISSUES ARE FOUND, ADD A NEW ROUND OF AUDITING AFTER FIXING THE CURRENT ROUND'S ISSUES (EVEN IF THERE ARE ONLY MINOR CHANGES). ITERATE UNTIL DONE.
 
+For substantive changes to real empirical pipelines (cleaning scripts, merges, estimation code — not one-off edits or throwaway scripts), ALSO get a Codex second opinion after the Sonnet loop converges: run `codex exec --sandbox read-only` on the changed files/diff with a review prompt, and reconcile the two reviews before declaring done. (The plugin's `/codex:review` and `/codex:adversarial-review` are user-only commands — I invoke those manually; `codex exec` is your path.) The point is cross-model independence — a reviewer from the same model family shares my blind spots. If `codex` is not on PATH, check `~/.nvm/versions/node/*/bin/codex` before concluding it's not installed. Only if it's truly absent or unauthenticated, say so and skip rather than silently omitting the step.
+
 ## Verification and provenance
 
 For real empirical pipelines (not one-off edits, quick lookups, or throwaway scripts), leave a trail I can check without redoing the work — producing results is cheap now, verifying them isn't.

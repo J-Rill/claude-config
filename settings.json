@@ -1,5 +1,5 @@
 {
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
@@ -8,7 +8,8 @@
     "refreshInterval": 10
   },
   "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": false
+    "andrej-karpathy-skills@karpathy-skills": false,
+    "codex@openai-codex": true
   },
   "extraKnownMarketplaces": {
     "karpathy-skills": {
@@ -16,8 +17,14 @@
         "source": "github",
         "repo": "forrestchang/andrej-karpathy-skills"
       }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "tui": "fullscreen"
 }
