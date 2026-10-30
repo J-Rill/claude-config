@@ -24,3 +24,8 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# 4. Skill folders that aren't shared config: app-managed copies of built-in
+#    skills (machine-specific) and skill-creator eval scratch output.
+/skills/synced/
+/skills/teach-workspace/
