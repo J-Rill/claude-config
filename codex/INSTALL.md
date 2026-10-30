@@ -1,54 +1,39 @@
-# Codex + Claude Code setup on a new machine
+# Codex setup on a new machine
 
-Reproduces the integration from this repo: Codex CLI as a cross-model second
-reviewer inside Claude Code, via the official `codex@openai-codex` plugin.
-Works on macOS and Linux (HPC login nodes) without sudo.
-
-## Steps
+This installs the Codex-native mirror from the `claude-config` repository without changing the live Claude Code configuration.
 
 ```bash
-# 1. This repo IS ~/.claude — clone it there first (skip if already done)
+# 1. Clone the configuration repository.
 git clone https://github.com/J-Rill/claude-config.git ~/.claude
 
-# 2. Install Claude Code if missing (goes to ~/.local/bin, no sudo)
-curl -fsSL https://claude.ai/install.sh | bash
+# 2. Install Codex CLI if needed (Node 18+ required).
+npm install -g @openai/codex
 
-# 3. Run the installer (nvm + Node LTS + Codex CLI + AGENTS.md + plugin)
+# 3. Install the Codex guidance, agents, references, rules, and skills.
 bash ~/.claude/codex/install.sh
 
-# 4. Authenticate Codex — headless machines use device auth
-codex login --device-auth        # ChatGPT account; usage counts against the plan
+# 4. Authenticate. Use device auth on headless machines.
+codex login --device-auth
 
-# 5. Verify end-to-end (from a NEW shell so PATH is fresh)
+# 5. Start a new Codex session and verify discovery.
 codex login status
-codex exec --sandbox read-only --skip-git-repo-check "Reply with exactly: OK"
+codex --ask-for-approval never "Summarize the current instructions and list the research skills you can see."
 ```
 
-Then start `claude` and run `/codex:setup` once (decline the optional stop-time
-review gate — we use on-demand + pipeline-triggered reviews instead).
+## Locations
 
-## What each piece does
+| Content | Location |
+|---|---|
+| Global working agreements | `~/.codex/AGENTS.md` |
+| Custom subagents | `~/.codex/agents/*.toml` |
+| Journal references | `~/.codex/references/*.md` |
+| Research rules | `~/.codex/rules/*.md` |
+| Personal skills | `~/.agents/skills/*` |
 
-| Piece | Where | Purpose |
-|---|---|---|
-| `codex/install.sh` | this repo | Idempotent installer for all of the below |
-| `codex/AGENTS.md` | → copied to `~/.codex/AGENTS.md` | Review standards Codex applies (merge cardinality, silent drops, loud failures, provenance) |
-| `settings.json` | this repo | Declares the `openai-codex` marketplace and enables the plugin — Claude Code fetches it on first run |
-| `CLAUDE.md` §"Code review after changes" | this repo | Tells Claude to get a Codex second opinion (`codex exec --sandbox read-only`) on substantive pipeline changes |
-
-Plugin commands (user-invoked): `/codex:review`, `/codex:adversarial-review`,
-`/codex:rescue`, `/codex:transfer`, `/codex:status`, `/codex:result`,
-`/codex:cancel`, `/codex:setup`.
+Codex normally detects skill changes automatically. Start a new session if an updated skill does not appear. `AGENTS.md` is loaded once per Codex run, so a new session is required after changing it.
 
 ## HPC notes
 
-- **No browser on login nodes** → `codex login --device-auth`, or copy
-  `~/.codex/auth.json` from an authenticated machine and `chmod 600` it.
-- **Old kernels**: Codex's read-only sandbox uses Landlock on Linux
-  (kernel ≥ 5.13). On older RHEL/CentOS kernels sandboxed runs may fail —
-  fall back to `codex exec --sandbox danger-full-access` (fine on a cluster
-  where you trust the prompt and the repo) or set `sandbox_mode` in
-  `~/.codex/config.toml`.
-- **Compute nodes usually have no internet** — run Codex from the login node.
-- nvm installs to `$HOME/.nvm`; if your `$HOME` is quota-limited, set
-  `NVM_DIR` to a project/scratch path before running `install.sh`.
+- On a login node without a browser, use `codex login --device-auth` or securely copy an authenticated `~/.codex/auth.json` and set mode `600`.
+- Compute nodes often lack internet access; authenticate and run network-dependent research tasks from a node with access.
+- Sandbox support varies with the operating system and kernel. Keep the default sandbox unless a concrete command fails and the requested task justifies broader access.
