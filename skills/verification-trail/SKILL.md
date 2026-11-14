@@ -9,9 +9,8 @@ description: >
   decision", "update the log", "log this stage", "add a LOG.md entry", "checkpoint
   this", "update the trail", or after a non-obvious methodological choice / a data
   step worth narrating in an empirical pipeline. Records ONLY what actually happened — never
-  fabricates. Distinct from PROGRESS.md (progress-tracker skill — transient
-  session state and next steps) and restart.md (restart skill — context handoff
-  before /clear); those are ephemeral, this is the durable research record.
+  fabricates. Distinct from transient session notes or handoff files
+  (PROGRESS.md, restart.md); those are ephemeral, this is the durable research record.
 argument-hint: "[optional: the decision or stage to log]"
 allowed-tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash"]
 ---

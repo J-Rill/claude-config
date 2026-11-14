@@ -1,66 +1,36 @@
-# Coding preferences
+# Working with me
 
-I'm an economist doing empirical research. Prioritize correctness and readability over abstraction.
+I'm an economist doing empirical research in Python and Stata (R only when a project requires it). Prioritize correctness and readability over abstraction.
 
-## Think before coding
+## Before starting
+- I often dictate long, loose requests. For anything longer than a few sentences, restate the task and your key assumptions in 2–3 lines before starting.
+- If a request has more than one reasonable reading that changes the result, say which you're taking and why, or ask (e.g., "drop duplicates" by ID vs. ID-year).
+- If there's a simpler approach than what I asked for, say so before building.
+- For multi-step work, set a concrete pass/fail check up front ("same estimates to 6 decimals, runtime halved") and don't call it done until it passes.
 
-- State your assumptions before implementing. If the request has multiple reasonable interpretations, present them — don't pick one silently (e.g., "drop duplicates" by ID or by ID-year: say which and why, or ask).
-- If there's a simpler approach to the task than what I asked for, say so before building — push back when warranted rather than quietly implementing the complicated version.
-- If something is unclear, stop and name what's confusing. A clarifying question before implementation beats a correction after.
-- These habits bias toward caution over speed — for trivial tasks, use judgment.
+## Editing code
+- Change only what I asked for. Flag other issues once, in passing.
+- Match the file's existing style. Remove what your change made unused; mention pre-existing dead code rather than deleting it.
+- No error handling for cases that can't happen in my pipeline. Prefer loud failures (`assert`, `stopifnot`) over silent NAs or defaults.
+- Descriptive names (`prices_2020`, not `p`). Comments explain the econ reasoning, not obvious steps.
+- Keep diffs small: if 200 lines could be 50, rewrite first.
+- Python: method chaining when readable. Stata: standalone `.do` files. R: pipes.
+- No tests, docs, or README files unless asked.
 
-## Naming and comments
+## Talking to me
+- Explanations: plain-English colleague voice. Lead with the point, give the reasoning, and include one short concrete example (e.g., "clustered by county, so a county's repeated rows aren't treated as independent, which would understate SEs").
+- Routine status: short bullets or a compact table.
+- After any cleaning or merge: rows loaded, rows surviving each step and why, join keys, duplicate/NA handling. Flag silent drops.
+- Analysis output: state the headline result in a sentence before the table.
+- Code review: point me to the lines that carry the substantive decision.
 
-- Descriptive variable names (`prices_2020`, not `p`) so the code reads like the analysis.
-- Comments explain *why* (the econ reasoning), and *what* when the code is non-obvious. Don't narrate obvious steps.
+## Review (scaled to stakes)
+- Pipeline code (cleaning, merges, estimation): when done, get one independent review with `codex exec --sandbox read-only` on the diff. A cross-model reviewer doesn't share your blind spots. Fix real issues and re-review once if the fixes were substantive. Stop after 2 rounds or once only nits remain. If `codex` isn't on PATH, try `~/.nvm/versions/node/*/bin/codex`. If it's unavailable, say so and use a Sonnet subagent instead.
+- Small edits and one-off scripts: no automatic review.
 
-## Refactoring discipline
-
-- Only modify what I ask you to modify — fix the bug I asked about, don't also rename, reorganize, or clean up surrounding code. Don't suggest refactoring proactively; flag anything worth noting once, in passing.
-- Don't add error handling, fallbacks, or validation for cases that can't realistically happen in my pipeline.
-- Prefer loud failures (`assert`, `stopifnot`, errors) over silent NA propagation or default values when data is wrong.
-- Match the existing style of the file you're editing, even if you'd write it differently.
-- Clean up only your own mess: remove imports and variables that *your* change made unused; leave pre-existing dead code alone (mention it, don't delete it).
-- Every changed line should trace back to my request — no features, flexibility, or configurability beyond what was asked, and if 200 lines could be 50, rewrite before showing me.
-
-## Goal-driven execution
-
-- Before starting, turn the task into a verifiable goal with a concrete pass/fail check — "speed up the bootstrap" becomes "same estimates to 6 decimals, runtime halved", not "make it faster". Weak criteria ("make it work") mean constant back-and-forth.
-- For multi-step tasks, state a brief plan with a verification check per step, and loop until the checks pass — don't declare done on the first run that doesn't error. Skip the formal plan for quick lookups and one-line edits.
-
-## Language stack
-
-- Primary: **Python** (pandas, numpy, scipy, statsmodels, openai, pydantic, selenium) and **Stata** (`.do` files).
-- Secondary: **R** only when the project requires it (tidyverse, fixest, sf, terra) — don't push me to R when Python or Stata can do the job.
-- Python: pandas method chaining when readable, else sequential assignment. Stata: standalone `.do` scripts, no programs/macros unless warranted. R: tidyverse pipes (`|>`/`%>%`) for long chains.
-
-## How to talk to me about your work
-
-- Talk to me like a knowledgeable colleague, not a status bot. When you're explaining a concept, a decision, or why code is written a certain way, use a warm, plain-English voice and give me the actual reasoning — don't force it into clipped bullets or over-compress it.
-- When you explain something, include one short concrete example so it lands. E.g., if you say "I clustered the standard errors by county," add "— so a county's repeated rows aren't treated as independent observations, which would otherwise understate the SEs."
-- "Not too succinct" means give me the reasoning and the example, not filler. Lead with the point, then unpack it.
-- Keep routine status reporting concise and structured (bullets / compact tables) — the warmer, example-driven style is for explanations and code choices, not for every progress update.
-- After any cleaning, transformation, or merge, report: what you loaded (row/col counts, key columns); what you filtered/joined/computed and why; how many rows survived each step and what dropped; and any assumptions (join key, duplicate handling, NA treatment). Flag silent drops or NA-fills rather than letting me find them later.
-- For regression or analysis output, state the headline result in a sentence or two before the table.
-- For code review, point me to the key lines implementing the substantive decision — not every changed line — and say in plain terms why they matter.
-
-## Code review after changes
-
-AFTER EVERY BIG CHANGE, LAUNCH A SONNET SUBAGENT TO REVIEW YOUR CHANGES FOR ISSUES. IF ANY ISSUES ARE FOUND, ADD A NEW ROUND OF AUDITING AFTER FIXING THE CURRENT ROUND'S ISSUES (EVEN IF THERE ARE ONLY MINOR CHANGES). ITERATE UNTIL DONE.
-
-For substantive changes to real empirical pipelines (cleaning scripts, merges, estimation code — not one-off edits or throwaway scripts), ALSO get a Codex second opinion after the Sonnet loop converges: run `codex exec --sandbox read-only` on the changed files/diff with a review prompt, and reconcile the two reviews before declaring done. (The plugin's `/codex:review` and `/codex:adversarial-review` are user-only commands — I invoke those manually; `codex exec` is your path.) The point is cross-model independence — a reviewer from the same model family shares my blind spots. If `codex` is not on PATH, check `~/.nvm/versions/node/*/bin/codex` before concluding it's not installed. Only if it's truly absent or unauthenticated, say so and skip rather than silently omitting the step.
-
-## Verification and provenance
-
-For real empirical pipelines (not one-off edits, quick lookups, or throwaway scripts), leave a trail I can check without redoing the work — producing results is cheap now, verifying them isn't.
-
-- **Set up the trail first.** Use git from the project's outset; ask whether I want DECISIONS.md / LOG.md before generating results.
-- **Commit in bounded checkpoints** (pull → clean → merge → compute → estimate), each with a message saying *why*. I review diffs, not whole codebases.
-- **DECISIONS.md / LOG.md on request** — judgment calls (choice, rejected alternatives, confidence) and a run narrative, via the `verification-trail` skill.
-- **Attrition tables.** Beyond reporting drops in chat, write an auditable `step, n_remaining, n_dropped, why` table in the Python cleaning stage.
-- **No number typed by hand** — every number/figure comes from a generated output file (the row-only `.tex` fragments produced per `rules/regression-table-output.md`), never a hardcoded coefficient; keep it traceable table → script → commit → decision.
-- **Never fake the trail.** Only log decisions and steps that actually happened — a clean trail documenting work you didn't do is worse than none.
-
-## Other
-
-- Don't write tests, type stubs, markdown docs, or `README.md`/summary files unless I ask.
+## Verification trail (empirical pipelines only)
+- Use git from the start. Commit at checkpoints (pull → clean → merge → compute → estimate) with messages that say why.
+- Before generating results, ask whether I want DECISIONS.md / LOG.md (`verification-trail` skill).
+- Write an attrition table (`step, n_remaining, n_dropped, why`) in the cleaning stage.
+- No hand-typed numbers. Every reported number comes from a generated file (format: `rules/regression-table-output.md`).
+- Log only what actually happened.

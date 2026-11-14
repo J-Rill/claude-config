@@ -62,18 +62,7 @@ Grouped by stage of the research process.
 | `review-paper` | Manuscript review with single-pass, adversarial critic–fixer, and simulated peer-review (editor + referees) modes. |
 | `review-plan` / `review-plan-auto` | Stress-tests a plan with expert critique; the `-auto` variant iterates until no critical issues remain. |
 | `verify-claims` | Runs Chain-of-Verification on a draft in a fresh context, flagging claims as supported, contradicted, or unverifiable. |
-| `double-check` | Critical self-review of recent edits — re-reads changed files and verifies referenced symbols, paths, and APIs exist. |
 | `strategic-revision` | Builds a dependency-mapped revision plan from referee reports, with a validated DAG and critical-path analysis. |
-
-### Session and workflow utilities
-
-| Skill | What it does |
-|---|---|
-| `progress-tracker` | Creates/updates a `PROGRESS.md` capturing the state of a working session. |
-| `restart` | Writes a structured snapshot before clearing context, so work resumes cleanly in a fresh conversation. |
-| `prompt` / `prompt-only` | Reformats an informal request into a structured prompt (and optionally executes it). |
-| `skill-creator` | Creates, edits, and benchmarks skills. |
-| `import-codex-skills` | Imports skills from a Codex install (`~/.codex/skills/`) into Claude Code. |
 
 ## Agents
 

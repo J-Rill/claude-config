@@ -30,8 +30,8 @@ state-year panel ready to regress wages on education").
 - **Pickle every key object** (summary tables, processed DataFrames). For large
   DataFrames prefer parquet; for the analysis-ready dataset also write `.dta` for
   Stata.
-- **Run the `/double-check` skill** on the generated script before presenting
-  results.
+- **Self-review the generated script** before presenting results: re-read it from
+  disk and confirm every column, path, and merge key it references actually exists.
 - **Fail loud.** Prefer `assert`/errors over silent NA propagation when the data
   is wrong (matches the global preferences).
 
@@ -122,7 +122,8 @@ Regression *tables* are not produced here — they come out of Stata as row-only
    - `df_clean.to_stata(OUT / "analysis.dta")`  # for Stata estimation
 2. Create `scripts/python/_outputs/` subdirectories as needed:
    `Path("scripts/python/_outputs/diagnostics").mkdir(parents=True, exist_ok=True)`.
-3. Run the `/double-check` skill on the generated script.
+3. Self-review the generated script (re-read from disk; verify referenced columns,
+   paths, and merge keys exist; stress-test edge cases like empty groups or NA keys).
 4. Address any Critical or High issues from the review.
 
 ---

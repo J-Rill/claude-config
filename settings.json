@@ -1,5 +1,5 @@
 {
-  "model": "opus[1m]",
+  "model": "opus",
   "enableWorkflows": true,
   "statusLine": {
     "type": "command",
@@ -25,7 +25,6 @@
       }
     }
   },
-  "outputStyle": "Concise",
   "effortLevel": "high",
   "modelSettings": {
     "claude-fable-5-1": {
@@ -33,9 +32,12 @@
     },
     "claude-opus-5-5": {
       "effortLevel": "high"
+    },
+    "claude-fable-5-2": {
+      "effortLevel": "high"
     }
   },
+  "promptSuggestionEnabled": false,
   "tui": "fullscreen",
-  "agentPushNotifEnabled": true,
-  "promptSuggestionEnabled": false
+  "agentPushNotifEnabled": true
 }
