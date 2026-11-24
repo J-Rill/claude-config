@@ -23,6 +23,7 @@ I'm an economist doing empirical research in Python and Stata (R only when a pro
 - After any cleaning or merge: rows loaded, rows surviving each step and why, join keys, duplicate/NA handling. Flag silent drops.
 - Analysis output: state the headline result in a sentence before the table.
 - Code review: point me to the lines that carry the substantive decision.
+- Math: put every equation, even short ones, in its own `$$ ... $$` display block (chain derivation steps with `=` in one block). Never use inline `$...$` (it shows as raw text in my chat window); for symbols in prose use Unicode (α, σ², w₁, E[x̃], ≥). No code blocks or ASCII art for math.
 
 ## Review (scaled to stakes)
 - Pipeline code (cleaning, merges, estimation): when done, get one independent review with `codex exec --sandbox read-only` on the diff. A cross-model reviewer doesn't share your blind spots. Fix real issues and re-review once if the fixes were substantive. Stop after 2 rounds or once only nits remain. If `codex` isn't on PATH, try `~/.nvm/versions/node/*/bin/codex`. If it's unavailable, say so and use a Sonnet subagent instead.
